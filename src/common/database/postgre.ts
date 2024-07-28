@@ -9,6 +9,4 @@ const pool = new Pool({
   max: 5,
 });
 
-pool.connect();
-
 export default pool;

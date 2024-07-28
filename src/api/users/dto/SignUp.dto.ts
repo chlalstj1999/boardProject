@@ -25,7 +25,7 @@ export class SignUpDto {
     this.birth = data.birth;
   }
 
-  static createAccountDto(data: any) {
+  static checkSignUpDto(data: any) {
     if (!data.userName.match(regx.userNameRegx)) {
       throw new BadRequestException("이름 확인 필요");
     }

@@ -5,7 +5,7 @@ import { UserController } from "./users.controller";
 const userRouter = Router();
 
 userRouter.post("/", wrapper(UserController.signUp));
-// userRouter.post("/login", wrapper(UserController.login));
+userRouter.post("/login", wrapper(UserController.login));
 // userRouter.delete("logout", wrapper(UserController.logout));
 // userRouter.get("/id", wrapper(UserController.getId));
 // userRouter.get("/pw", wrapper(UserController.getPw));

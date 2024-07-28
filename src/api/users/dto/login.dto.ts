@@ -10,7 +10,7 @@ export class LoginDto {
     this.pwValue = data.pwValue;
   }
 
-  static getUserDto(data: any) {
+  static checkLoginDto(data: any) {
     if (!data.idValue.match(regx.idRegx)) {
       throw new BadRequestException("ID 확인 필요");
     }
