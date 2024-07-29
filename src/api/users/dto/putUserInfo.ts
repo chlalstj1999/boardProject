@@ -1,41 +1,30 @@
 import { regx } from "../../../common/const/regx";
 import { BadRequestException } from "../../../common/exception/BadRequestException";
 
-export class SignUpDto {
+export class PutUserInfoDto {
+  accountIdx: number;
   userName: string;
-  idValue: string;
-  pwValue: string;
   email: string;
   gender: string;
   birth: string;
 
   constructor(data: {
+    accountIdx: number;
     userName: string;
-    idValue: string;
-    pwValue: string;
     email: string;
     gender: string;
     birth: string;
   }) {
+    this.accountIdx = data.accountIdx;
     this.userName = data.userName;
-    this.idValue = data.idValue;
-    this.pwValue = data.pwValue;
     this.email = data.email;
     this.gender = data.gender;
     this.birth = data.birth;
   }
 
-  static checkSignUpDto(data: SignUpDto) {
+  static checkSignUpDto(data: PutUserInfoDto) {
     if (!data.userName.match(regx.userNameRegx)) {
       throw new BadRequestException("이름 확인 필요");
-    }
-
-    if (!data.idValue.match(regx.idRegx)) {
-      throw new BadRequestException("ID 확인 필요");
-    }
-
-    if (!data.pwValue.match(regx.pwRegx)) {
-      throw new BadRequestException("password 확인 필요");
     }
 
     if (!data.email.match(regx.emailRegx)) {

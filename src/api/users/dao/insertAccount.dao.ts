@@ -6,7 +6,7 @@ export class InsertAccountDao {
   idValue: string;
   pwValue: string;
   email: string;
-  birth: Date;
+  birth: string;
   gender: string;
   roleIdx: number;
 
@@ -15,7 +15,7 @@ export class InsertAccountDao {
     idValue: string;
     pwValue: string;
     email: string;
-    birth: Date;
+    birth: string;
     gender: string;
     roleIdx: number;
   }) {
