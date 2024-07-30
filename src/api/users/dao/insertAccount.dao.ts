@@ -32,7 +32,7 @@ export class InsertAccountDao {
     insertAccountDao: InsertAccountDao,
     conn: PoolClient
   ) => {
-    await pool.query(
+    await conn.query(
       `INSERT INTO project.account (name, id, password, email, gender, birth, "roleIdx") VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         insertAccountDao.userName,

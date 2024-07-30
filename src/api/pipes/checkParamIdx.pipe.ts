@@ -1,16 +1,16 @@
-import { Request, Response, NextFunction } from "express";
 import { BadRequestException } from "../../common/exception/BadRequestException";
 
 export class CheckParamIdxPipe {
-  static checkParamIdx = (param: string) => {
-    const idx = null;
-    (req: Request, res: Response, next: NextFunction) => {
-      const idx = req.params[param];
+  static checkParamIdx = (params: string[]) => {
+    const paramsName = params[0];
+    const paramsIdx = params[1];
 
-      if (!idx) {
-        throw new BadRequestException(`${param}값이 안 옴`);
-      }
-    };
-    return Number(idx);
+    const paramsIdxNumber = Number(paramsIdx);
+
+    if (!paramsIdxNumber) {
+      throw new BadRequestException(`${paramsName}값이 안 옴`);
+    }
+
+    return paramsIdxNumber;
   };
 }

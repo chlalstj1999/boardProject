@@ -6,7 +6,7 @@ import { FindIdDto } from "./dto/findId.dto";
 import { FindPwDto } from "./dto/findPw.dto";
 import { InternalServerErrorException } from "../../common/exception/InternalServerErrorException";
 import { PutUserInfoDto } from "./dto/putUserInfo";
-import { CheckRolePipe } from "../pipes/checkRole.pipe";
+import { CheckAdminPipe } from "../pipes/checkAdmin.pipe";
 import { CheckLoginPipe } from "../pipes/checkLogin.pipe";
 import { CheckParamIdxPipe } from "../pipes/checkParamIdx.pipe";
 
@@ -21,7 +21,7 @@ export class UserController {
       birth: req.body.birth,
     });
 
-    await SignUpDto.checkSignUpDto(signUpDto);
+    SignUpDto.checkSignUpDto(signUpDto);
 
     await UserService.createUser(signUpDto);
 
@@ -88,7 +88,7 @@ export class UserController {
     const roleIdx = req.session.roleIdx;
 
     CheckLoginPipe.checkLogin(accountIdx);
-    CheckRolePipe.checkRole(roleIdx);
+    CheckAdminPipe.checkRole(roleIdx);
 
     const usersInfo = await UserService.selectUsersInfo();
 
@@ -115,10 +115,11 @@ export class UserController {
   ) => {
     const accountIdx = req.session.accountIdx;
     const roleIdx = req.session.roleIdx;
+    const paramIdx = req.params.userIdx;
 
     CheckLoginPipe.checkLogin(accountIdx);
-    CheckRolePipe.checkRole(roleIdx);
-    const userIdx = CheckParamIdxPipe.checkParamIdx("userIdx");
+    CheckAdminPipe.checkRole(roleIdx);
+    const userIdx = CheckParamIdxPipe.checkParamIdx(["userIdx", paramIdx]);
 
     await UserService.updateAuth(userIdx);
 
@@ -157,8 +158,14 @@ export class UserController {
     const accountIdx = req.session.accountIdx;
     const validateAccountIdx = CheckLoginPipe.checkLogin(accountIdx);
 
-    const usersInfo = await UserService.deleteUser(validateAccountIdx);
+    await UserService.deleteUser(validateAccountIdx);
 
-    res.status(200).send(usersInfo);
+    req.session.destroy((err) => {
+      if (err) {
+        throw new InternalServerErrorException("failed");
+      }
+
+      res.status(200).send();
+    });
   };
 }

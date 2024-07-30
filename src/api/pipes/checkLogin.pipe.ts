@@ -6,6 +6,6 @@ export class CheckLoginPipe {
       throw new UnauthorizedException("login 필요");
     }
 
-    return accountIdx;
+    return Number(accountIdx);
   };
 }

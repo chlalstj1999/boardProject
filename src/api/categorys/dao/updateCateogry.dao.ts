@@ -12,5 +12,10 @@ export class UpdateCategoryDao {
   static updateCategory = async (
     updateCategoryDao: UpdateCategoryDao,
     conn: PoolClient
-  ) => {};
+  ) => {
+    await conn.query(`UPDATE project.category SET name = $1 WHERE idx = $2`, [
+      updateCategoryDao.categoryName,
+      updateCategoryDao.categoryIdx,
+    ]);
+  };
 }

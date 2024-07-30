@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AddCategoryDto } from "./dto/addCategory.dto";
 import { CategorysService } from "./categorys.service";
 import { CheckLoginPipe } from "../pipes/checkLogin.pipe";
-import { CheckRolePipe } from "../pipes/checkRole.pipe";
+import { CheckAdminPipe } from "../pipes/checkAdmin.pipe";
 import { UpdateCategoryDto } from "./dto/updateCategory.dto";
 import { CheckParamIdxPipe } from "../pipes/checkParamIdx.pipe";
 
@@ -16,7 +16,7 @@ export class CategorysController {
     const roleIdx = req.session.roleIdx;
 
     CheckLoginPipe.checkLogin(accountIdx);
-    CheckRolePipe.checkRole(roleIdx);
+    CheckAdminPipe.checkRole(roleIdx);
 
     const addCategoryDto = new AddCategoryDto(req.body.categoryName);
 
@@ -40,7 +40,17 @@ export class CategorysController {
     res: Response,
     next: NextFunction
   ) => {
-    const categoryIdx = CheckParamIdxPipe.checkParamIdx("cateogryIdx");
+    const accountIdx = req.session.accountIdx;
+    const roleIdx = req.session.roleIdx;
+    const paramIdx = req.params.categoryIdx;
+
+    CheckLoginPipe.checkLogin(accountIdx);
+    CheckAdminPipe.checkRole(roleIdx);
+
+    const categoryIdx = CheckParamIdxPipe.checkParamIdx([
+      "categoryIdx",
+      paramIdx,
+    ]);
 
     const updateCategoryDto = new UpdateCategoryDto({
       categoryIdx: categoryIdx,
@@ -56,7 +66,11 @@ export class CategorysController {
     res: Response,
     next: NextFunction
   ) => {
-    const categoryIdx = CheckParamIdxPipe.checkParamIdx("cateogryIdx");
+    const paramIdx = req.params.categoryIdx;
+    const categoryIdx = CheckParamIdxPipe.checkParamIdx([
+      "categoryIdx",
+      paramIdx,
+    ]);
 
     await CategorysService.deleteCategory(categoryIdx);
     res.status(200).send();
