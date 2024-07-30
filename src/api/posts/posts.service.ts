@@ -20,6 +20,8 @@ export class PostService {
       return await PostRepository.getPostLists(categoryIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
@@ -40,7 +42,7 @@ export class PostService {
         throw new ConflictException("같은 제목이 존재함");
       }
 
-      return await PostRepository.addPost(
+      await PostRepository.addPost(
         {
           accountIdx: addPostDto.accountIdx,
           categoryIdx: addPostDto.categoryIdx,
@@ -51,6 +53,8 @@ export class PostService {
       );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
@@ -66,6 +70,8 @@ export class PostService {
       return await PostRepository.getPost(postIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
@@ -103,6 +109,8 @@ export class PostService {
       );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
@@ -123,6 +131,8 @@ export class PostService {
       await PostRepository.deletePost(postIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
@@ -147,6 +157,8 @@ export class PostService {
       }
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 }

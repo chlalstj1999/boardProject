@@ -9,9 +9,9 @@ import { NotFoundException } from "../../common/exception/NotFoundException";
 
 export class CategorysService {
   static createCategory = async (addCategoryDto: AddCategoryDto) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       const insertCategoryDao = new InsertCategoryDao(
         addCategoryDto.categoryName
       );
@@ -30,32 +30,29 @@ export class CategorysService {
       );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectCategorys = async () => {
+    const conn = await pool.connect();
+
     try {
-      const conn = await pool.connect();
-
-      const categorys = await CategorysRepository.getCategorys(conn);
-
-      return categorys;
+      return await CategorysRepository.getCategorys(conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static updateCategory = async (updateCategoryDto: UpdateCategoryDto) => {
+    const conn = await pool.connect();
+
     try {
-      const conn = await pool.connect();
-
-      const updateCategoryDao = new UpdateCategoryDao({
-        categoryIdx: updateCategoryDto.categoryIdx,
-        categoryName: updateCategoryDto.categoryName,
-      });
-
       const isCategory = await CategorysRepository.selectByIdx(
-        updateCategoryDao.categoryIdx,
+        updateCategoryDto.categoryIdx,
         conn
       );
 
@@ -65,7 +62,7 @@ export class CategorysService {
 
       const duplicateCategory =
         await CategorysRepository.selectCategoryExclutionIdx(
-          updateCategoryDao,
+          updateCategoryDto,
           conn
         );
 
@@ -73,16 +70,24 @@ export class CategorysService {
         throw new ConflictException("카테고리가 이미 있음");
       }
 
-      await CategorysRepository.putCategory(updateCategoryDto, conn);
+      await CategorysRepository.putCategory(
+        {
+          categoryIdx: updateCategoryDto.categoryIdx,
+          categoryName: updateCategoryDto.categoryName,
+        },
+        conn
+      );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static deleteCategory = async (categoryIdx: number) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       const isCategory = await CategorysRepository.selectByIdx(
         categoryIdx,
         conn
@@ -100,6 +105,8 @@ export class CategorysService {
       return categorys;
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 }

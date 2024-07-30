@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from "pg";
+import { PoolClient } from "pg";
 import { InsertAccountDao } from "./dao/insertAccount.dao";
 import { GetAccountDao } from "./dao/getAccount.dao";
 import { LoginDto } from "./dto/login.dto";
@@ -34,8 +34,6 @@ export class UserRepository {
       await InsertAccountDao.createAccount(insertAccountDao, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -48,8 +46,6 @@ export class UserRepository {
       );
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -62,8 +58,6 @@ export class UserRepository {
       );
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -76,8 +70,6 @@ export class UserRepository {
       );
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -86,8 +78,6 @@ export class UserRepository {
       return await GetAccountDao.selectUsersInfo(conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -96,8 +86,6 @@ export class UserRepository {
       return await GetAccountDao.selectUserInfo(accountIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -112,8 +100,6 @@ export class UserRepository {
       await UpdateAccountDao.putUserRole(userRole.roleIdx, userIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -136,8 +122,6 @@ export class UserRepository {
       await UpdateAccountDao.putUserInfo(updateAccountDao, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -146,8 +130,6 @@ export class UserRepository {
       await DeleteAccountDao.deleteUser(accountIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 }

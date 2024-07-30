@@ -10,8 +10,6 @@ export class PostRepository {
       return await GetPostDao.getPostLists(categoryIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -26,11 +24,9 @@ export class PostRepository {
   static addPost = async (insertPostDao: InsertPostDao, conn: PoolClient) => {
     try {
       console.log(insertPostDao);
-      return await InsertPostDao.addPost(insertPostDao, conn);
+      await InsertPostDao.addPost(insertPostDao, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -47,8 +43,6 @@ export class PostRepository {
       return await GetPostDao.getPost(postIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -57,8 +51,6 @@ export class PostRepository {
       await UpdatePostDao.putPost(updatePostDao, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -79,8 +71,6 @@ export class PostRepository {
       await DeletePostDao.deletePost(postIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -102,7 +92,7 @@ export class PostRepository {
     conn: PoolClient
   ) => {
     try {
-      return await InsertPostDao.addPostLike(accountIdx, postIdx, conn);
+      await InsertPostDao.addPostLike(accountIdx, postIdx, conn);
     } catch (err) {
       throw err;
     }
@@ -114,7 +104,7 @@ export class PostRepository {
     conn: PoolClient
   ) => {
     try {
-      return await DeletePostDao.deletePostLike(accountIdx, postIdx, conn);
+      await DeletePostDao.deletePostLike(accountIdx, postIdx, conn);
     } catch (err) {
       throw err;
     }

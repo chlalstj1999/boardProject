@@ -22,8 +22,6 @@ export class CategorysRepository {
       await InsertCategoryDao.addCategory(categoryName, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -32,8 +30,6 @@ export class CategorysRepository {
       return await GetCategoryDao.selectCategorys(conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -73,8 +69,6 @@ export class CategorysRepository {
       );
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 
@@ -83,8 +77,6 @@ export class CategorysRepository {
       await DeleteCategoryDao.deleteCategory(categoryIdx, conn);
     } catch (err) {
       throw err;
-    } finally {
-      conn.release();
     }
   };
 }

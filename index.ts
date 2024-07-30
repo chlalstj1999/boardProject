@@ -5,6 +5,7 @@ import userRouter from "./src/api/users/users.router";
 import categoryRouter from "./src/api/categorys/categorys.router";
 import logRequests from "./src/common/module/logger";
 import postRouter from "./src/api/posts/posts.router";
+import commentRouter from "./src/api/comments/comments.router";
 
 const app = express();
 const port = 8000;
@@ -30,6 +31,7 @@ app.use(logRequests);
 app.use("/users", userRouter);
 app.use("/categorys", categoryRouter);
 app.use("/posts", postRouter);
+app.use("/comments", commentRouter);
 
 app.use((req, res, next) => {
   next(new Exception(404, "router not Found"));

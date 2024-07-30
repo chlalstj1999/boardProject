@@ -10,9 +10,9 @@ import { PutUserInfoDto } from "./dto/putUserInfo";
 
 export class UserService {
   static createUser = async (signUpDto: SignUpDto) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       const idDuplicateUser = await UserRepository.selectById(
         signUpDto.idValue,
         conn
@@ -43,12 +43,15 @@ export class UserService {
       );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectUser = async (loginDto: LoginDto) => {
+    const conn = await pool.connect();
+
     try {
-      const conn = await pool.connect();
       const user = await UserRepository.getUser(loginDto, conn);
 
       if (user.length === 0) {
@@ -58,12 +61,15 @@ export class UserService {
       return user;
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectId = async (findIdDto: FindIdDto) => {
+    const conn = await pool.connect();
+
     try {
-      const conn = await pool.connect();
       const user = await UserRepository.getId(findIdDto, conn);
 
       if (user.length === 0) {
@@ -73,12 +79,15 @@ export class UserService {
       return user;
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectPw = async (findPwDto: FindPwDto) => {
+    const conn = await pool.connect();
+
     try {
-      const conn = await pool.connect();
       const user = await UserRepository.getPw(findPwDto, conn);
 
       if (user.length === 0) {
@@ -88,43 +97,51 @@ export class UserService {
       return user;
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectUsersInfo = async () => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       return await UserRepository.getUsersInfo(conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static selectUserInfo = async (accountIdx: number) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       return await UserRepository.getUserInfo(accountIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static updateAuth = async (userIdx: number) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       await UserRepository.putUserAuth(userIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static updatUserInfo = async (putUserInfoDto: PutUserInfoDto) => {
-    try {
-      const conn = await pool.connect();
+    const conn = await pool.connect();
 
+    try {
       const emailDuplicateUser = await UserRepository.selectByEmailExclusionMe(
         putUserInfoDto,
         conn
@@ -146,16 +163,19 @@ export class UserService {
       );
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 
   static deleteUser = async (accountIdx: number) => {
+    const conn = await pool.connect();
     try {
-      const conn = await pool.connect();
-
       await UserRepository.deleteUser(accountIdx, conn);
     } catch (err) {
       throw err;
+    } finally {
+      conn.release();
     }
   };
 }
