@@ -6,10 +6,9 @@ const postRouter = Router();
 
 postRouter.get("/list", wrapper(PostController.getPostLists));
 postRouter.post("/", wrapper(PostController.addPost));
-// postRouter.delete("/:postIdx", wrapper(UserController.logout));
-// postRouter.get("/:postIdx", wrapper(UserController.getId));
-// postRouter.get("/:postIdx", wrapper(UserController.getPw));
-// postRouter.get("/:postIdx/like", wrapper(UserController.getUsersInfo));
-// postRouter.get("/me", wrapper(UserController.getUserInfo));
+postRouter.get("/:postIdx", wrapper(PostController.getPost));
+postRouter.put("/:postIdx", wrapper(PostController.putPost));
+postRouter.delete("/:postIdx", wrapper(PostController.deletePost));
+postRouter.put("/:postIdx/like", wrapper(PostController.postLike));
 
 export default postRouter;
