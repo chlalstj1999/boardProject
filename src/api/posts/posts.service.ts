@@ -84,9 +84,12 @@ export class PostService implements IPostService {
       postDto,
       this.pool
     );
+
     if (postDuplicate.length !== 0) {
       throw new ConflictException("같은 제목이 존재함");
     }
+
+    await this.postRepository.isImageTable(postDto, this.pool);
 
     await this.postRepository.putPost(postDto, this.pool);
   }

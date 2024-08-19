@@ -112,6 +112,24 @@ export class PostRepository implements IpostRepository {
     return postDto;
   }
 
+  async isImageTable(
+    postDto: PostDto,
+    conn: Pool = this.pool
+  ): Promise<PostDto> {
+    const isImageTableQueryResult = await conn.query(
+      `SELECT 1 FROM project.image WHERE "postIdx"=$1`,
+      [postDto.postIdx]
+    );
+
+    if (isImageTableQueryResult.rows.length === 0) {
+      postDto.isImage = false;
+    } else {
+      postDto.isImage = true;
+    }
+
+    return postDto;
+  }
+
   async getPost(postDto: PostDto, conn: Pool = this.pool): Promise<PostDto> {
     const postQueryResult = await conn.query(
       `SELECT post.idx AS "postIdx", account.name AS "userName", post.title, post.content, post."createdAt", post."countLike" AS "cntPostLike"
@@ -172,10 +190,25 @@ export class PostRepository implements IpostRepository {
       [postDto.title, postDto.content, postDto.postIdx]
     );
 
-    await conn.query(
-      `UPDATE project.image SET "imageUrls" = $1 WHERE "postIdx" = $2`,
-      [postDto.imageUrls, postDto.postIdx]
-    );
+    if (postDto.isImage) {
+      if (postDto.imageUrls?.length !== 0) {
+        await conn.query(
+          `UPDATE project.image SET "imageUrls" = $1 WHERE "postIdx" = $2`,
+          [postDto.imageUrls, postDto.postIdx]
+        );
+      }
+
+      await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
+        postDto.postIdx,
+      ]);
+    }
+
+    if (postDto.imageUrls?.length !== 0) {
+      await conn.query(
+        `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
+        [postDto.postIdx, postDto.imageUrls]
+      );
+    }
     await conn.query(`COMMIT`);
   }
 
