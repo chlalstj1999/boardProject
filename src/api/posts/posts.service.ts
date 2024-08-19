@@ -52,6 +52,12 @@ export class PostService implements IPostService {
       throw new ConflictException("같은 제목이 존재함");
     }
 
+    if (postDto.imageUrls?.length === 0) {
+      postDto.isImage = false;
+    } else {
+      postDto.isImage = true;
+    }
+
     await this.postRepository.addPost(postDto, this.pool);
   }
 

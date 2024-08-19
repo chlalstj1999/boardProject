@@ -59,10 +59,13 @@ export class PostRepository implements IpostRepository {
 
     const postIdx = postIdxQueryResult.rows[0].idx;
 
-    await conn.query(
-      `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
-      [postIdx, postDto.imageUrls]
-    );
+    if (postDto.isImage) {
+      await conn.query(
+        `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
+        [postIdx, postDto.imageUrls]
+      );
+    }
+
     await conn.query("COMMIT");
   }
 

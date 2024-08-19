@@ -44,13 +44,21 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    let imageUrls;
+
+    if (!req.body.imageUrls) {
+      imageUrls = [];
+    } else {
+      imageUrls = req.body.imageUrls;
+    }
+
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       categoryIdx: req.body.categoryIdx,
       title: req.body.title,
       content: req.body.content,
       likes: 0,
-      imageUrls: req.body.imageUrls,
+      imageUrls: imageUrls,
     });
 
     const categoryDto = new CategoryDto({
