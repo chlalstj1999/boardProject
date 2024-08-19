@@ -1,34 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { CommentService } from "./comments.service";
 import { CommentDto } from "./dto/comment.dto";
-import { regx } from "../../common/const/regx";
-import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { PostDto } from "../posts/dto/post.dto";
-import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
 
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   async addComment(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-    isRegxMatch([["comment", regx.commentRegx]])(req, res, next);
-
     const commentDto = new CommentDto({
-      accountIdx: accountIdx,
+      accountIdx: res.locals.accountIdx,
       postIdx: req.body.postIdx,
       comment: req.body.comment,
       likes: 0,
@@ -49,7 +29,7 @@ export class CommentController {
 
   async getComments(req: Request, res: Response, next: NextFunction) {
     const commentDto = new CommentDto({
-      postIdx: checkParamIdx(["postIdx", req.body.postIdx]),
+      postIdx: Number(req.body.postIdx),
     });
 
     const postDto = new PostDto({
@@ -65,27 +45,9 @@ export class CommentController {
   }
 
   async putComment(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
-    isRegxMatch([["comment", regx.commentRegx]])(req, res, next);
-
     const commentDto = new CommentDto({
-      accountIdx: accountIdx,
-      commentIdx: checkParamIdx(["commentIdx", req.params.commentIdx]),
+      accountIdx: res.locals.accountIdx,
+      commentIdx: Number(req.params.commentIdx),
       comment: req.body.comment,
     });
 
@@ -99,25 +61,9 @@ export class CommentController {
   }
 
   async deleteComment(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const commentDto = new CommentDto({
-      accountIdx: accountIdx,
-      commentIdx: checkParamIdx(["commentIdx", req.params.commentIdx]),
+      accountIdx: res.locals.accountIdx,
+      commentIdx: Number(req.params.commentIdx),
     });
 
     await this.commentService.deleteComment(commentDto);
@@ -130,25 +76,9 @@ export class CommentController {
   }
 
   async commentLike(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const commentDto = new CommentDto({
-      accountIdx: accountIdx,
-      commentIdx: checkParamIdx(["commentIdx", req.params.commentIdx]),
+      accountIdx: res.locals.accountIdx,
+      commentIdx: Number(req.params.commentIdx),
     });
 
     await this.commentService.updateCommentLike(commentDto);

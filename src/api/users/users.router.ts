@@ -5,6 +5,7 @@ import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { regx } from "../../common/const/regx";
 import { checkVerifyToken } from "../../common/pipes/checkVerifyToken.pipe";
 import { checkAdmin } from "../../common/pipes/checkAdmin.pipe";
+import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
 
 const userRouter = Router();
 
@@ -65,6 +66,7 @@ userRouter.put(
   "/:userIdx/auth",
   checkVerifyToken(),
   checkAdmin(),
+  checkParamIdx(["userIdx"]),
   wrapper(controller.userController.updateAuth.bind(controller.userController))
 );
 userRouter.put(

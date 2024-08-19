@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "./users.service";
-import isRegxMatch from "../../common/pipes/checkRegx.pipe";
-import { regx } from "../../common/const/regx";
 import { UserDto } from "./dto/user.dto";
-import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -115,7 +112,7 @@ export class UserController {
     const userDto = new UserDto({
       accountIdx: res.locals.accountIdx,
       roleIdx: res.locals.roleIdx,
-      userIdx: checkParamIdx(["userIdx", req.params.userIdx]),
+      userIdx: Number(req.params.userIdx),
     });
 
     await this.userService.updateAuth(userDto);

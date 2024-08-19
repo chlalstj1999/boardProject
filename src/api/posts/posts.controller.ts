@@ -4,8 +4,6 @@ import { PostDto } from "./dto/post.dto";
 import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { regx } from "../../common/const/regx";
 import { CategoryDto } from "../categorys/dto/category.dto";
-import { checkQueryIdx } from "../../common/pipes/checkQueryIdx.pipe";
-import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
 import { BadRequestException } from "../../common/exception/BadRequestException";
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { bucketName } from "../../common/const/environment";
@@ -15,7 +13,7 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   async getPostLists(req: Request, res: Response, next: NextFunction) {
-    const categoryIdx = checkQueryIdx(["categoryIdx", req.query.categoryIdx]);
+    const categoryIdx = Number(req.query.categoryIdx);
 
     const postDto = new PostDto({
       categoryIdx: categoryIdx,
@@ -31,29 +29,8 @@ export class PostController {
   }
 
   async addPost(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
-    isRegxMatch([
-      ["title", regx.postTitleRegx],
-      ["content", regx.postContentRegx],
-    ])(req, res, next);
-
     const postDto = new PostDto({
-      accountIdx: accountIdx,
+      accountIdx: res.locals.accountIdx,
       categoryIdx: req.body.categoryIdx,
       title: req.body.title,
       content: req.body.content,
@@ -76,7 +53,7 @@ export class PostController {
 
   async getPost(req: Request, res: Response, next: NextFunction) {
     const postDto = new PostDto({
-      postIdx: checkParamIdx(["postIdx", req.params.postIdx]),
+      postIdx: Number(req.params.postIdx),
     });
 
     const post = await this.postService.selectPost(postDto);
@@ -85,22 +62,6 @@ export class PostController {
   }
 
   async putPost(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     isRegxMatch([
       ["title", regx.postTitleRegx],
       ["content", regx.postContentRegx],
@@ -126,8 +87,8 @@ export class PostController {
     }
 
     const postDto = new PostDto({
-      accountIdx: accountIdx,
-      postIdx: checkParamIdx(["postIdx", req.params.postIdx]),
+      accountIdx: res.locals.accountIdx,
+      postIdx: Number(req.params.postIdx),
       title: req.body.title,
       content: req.body.content,
       imageUrls: req.body.imageUrls,
@@ -143,22 +104,6 @@ export class PostController {
   }
 
   async deletePost(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const originalImageUrls = req.body.originalImageUrls as Array<string>;
 
     if (originalImageUrls.length !== 0) {
@@ -179,8 +124,8 @@ export class PostController {
     }
 
     const postDto = new PostDto({
-      accountIdx: accountIdx,
-      postIdx: checkParamIdx(["postIdx", req.params.postIdx]),
+      accountIdx: res.locals.accountIdx,
+      postIdx: Number(req.params.postIdx),
     });
 
     await this.postService.deletePost(postDto);
@@ -193,25 +138,9 @@ export class PostController {
   }
 
   async postLike(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const postDto = new PostDto({
-      accountIdx: accountIdx,
-      postIdx: checkParamIdx(["postIdx", req.params.postIdx]),
+      accountIdx: res.locals.accountIdx,
+      postIdx: Number(req.params.postIdx),
     });
 
     await this.postService.updatePostLike(postDto);
@@ -224,14 +153,6 @@ export class PostController {
   }
 
   async addImages(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-    }
-
     const images = req.files as Express.MulterS3.File[];
 
     if (!images || images.length === 0) {
