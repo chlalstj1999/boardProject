@@ -7,7 +7,7 @@ export function checkParamIdx(params: string[]) {
       params.forEach((paramName) => {
         const paramsIdx = req.params[paramName];
 
-        if (typeof paramsIdx !== "number") {
+        if (paramsIdx === `:${paramName}`) {
           throw new BadRequestException(`${paramName}값이 안 옴`);
         }
       });
