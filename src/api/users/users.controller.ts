@@ -5,6 +5,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../common/utils/token";
+import { googleClientId } from "../../common/const/environment";
 
 interface IUserController {
   signUp(req: Request, res: Response, next: NextFunction): Promise<void>;
