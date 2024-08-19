@@ -117,14 +117,16 @@ export class PostRepository implements IpostRepository {
     conn: Pool = this.pool
   ): Promise<PostDto> {
     const isImageTableQueryResult = await conn.query(
-      `SELECT 1 FROM project.image WHERE "postIdx"=$1`,
+      `SELECT "imageUrls" FROM project.image WHERE "postIdx"=$1`,
       [postDto.postIdx]
     );
 
     if (isImageTableQueryResult.rows.length === 0) {
       postDto.isImage = false;
+      postDto.originalImageUrls = [];
     } else {
       postDto.isImage = true;
+      postDto.originalImageUrls = isImageTableQueryResult.rows[0].imageUrls;
     }
 
     return postDto;
@@ -191,24 +193,29 @@ export class PostRepository implements IpostRepository {
     );
 
     if (postDto.isImage) {
-      if (postDto.imageUrls?.length !== 0) {
-        await conn.query(
-          `UPDATE project.image SET "imageUrls" = $1 WHERE "postIdx" = $2`,
-          [postDto.imageUrls, postDto.postIdx]
-        );
+      if (!postDto.isSameImage) {
+        if (postDto.imageUrls?.length !== 0) {
+          await conn.query(
+            `UPDATE project.image SET "imageUrls" = $1 WHERE "postIdx" = $2`,
+            [postDto.imageUrls, postDto.postIdx]
+          );
+        }
       }
 
-      await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
-        postDto.postIdx,
-      ]);
+      if (postDto.imageUrls?.length === 0) {
+        await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
+          postDto.postIdx,
+        ]);
+      }
+    } else {
+      if (postDto.imageUrls?.length !== 0) {
+        await conn.query(
+          `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
+          [postDto.postIdx, postDto.imageUrls]
+        );
+      }
     }
 
-    if (postDto.imageUrls?.length !== 0) {
-      await conn.query(
-        `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
-        [postDto.postIdx, postDto.imageUrls]
-      );
-    }
     await conn.query(`COMMIT`);
   }
 

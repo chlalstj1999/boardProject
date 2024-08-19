@@ -9,7 +9,9 @@ interface IpostDto {
   author?: string;
   authorIdx?: number;
   imageUrls?: string[];
+  originalImageUrls?: string[];
   isImage?: boolean;
+  isSameImage?: boolean;
 }
 
 interface IpostResponseDto {
@@ -35,7 +37,9 @@ export class PostDto implements IpostDto, IpostResponseDto {
   author?: string;
   authorIdx?: number;
   imageUrls?: string[];
+  originalImageUrls?: string[];
   isImage?: boolean;
+  isSameImage?: boolean;
 
   constructor(data?: Partial<IpostDto>) {
     if (data) {

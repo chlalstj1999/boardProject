@@ -85,11 +85,11 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const originalImageUrls = req.body.originalImageUrls as Array<string>;
+    const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
 
-    if (originalImageUrls.length !== 0) {
+    if (deleteImageUrls.length !== 0) {
       const keys = await Promise.all(
-        originalImageUrls.map((imgUrl) => {
+        deleteImageUrls.map((imgUrl) => {
           return { Key: imgUrl.split("/").slice(-1)[0] };
         })
       );
@@ -126,11 +126,11 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const originalImageUrls = req.body.originalImageUrls as Array<string>;
+    const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
 
-    if (originalImageUrls.length !== 0) {
+    if (deleteImageUrls.length !== 0) {
       const keys = await Promise.all(
-        originalImageUrls.map((imgUrl) => {
+        deleteImageUrls.map((imgUrl) => {
           return { Key: imgUrl.split("/").slice(-1)[0] };
         })
       );

@@ -91,6 +91,18 @@ export class PostService implements IPostService {
 
     await this.postRepository.isImageTable(postDto, this.pool);
 
+    postDto.isSameImage = false;
+
+    if (postDto.imageUrls?.length === postDto.originalImageUrls?.length) {
+      for (let i = 0; i < postDto.imageUrls!.length; i++) {
+        if (postDto.imageUrls![i] !== postDto.originalImageUrls![i]) {
+          postDto.isSameImage = false;
+        } else {
+          postDto.isSameImage = true;
+        }
+      }
+    }
+
     await this.postRepository.putPost(postDto, this.pool);
   }
 
