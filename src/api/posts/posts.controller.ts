@@ -7,10 +7,23 @@ import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { bucketName } from "../../common/const/environment";
 import { s3 } from "../../common/const/s3Client";
 
-export class PostController {
+interface IPostController {
+  getPostLists(req: Request, res: Response, next: NextFunction): Promise<void>;
+  addPost(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getPost(req: Request, res: Response, next: NextFunction): Promise<void>;
+  putPost(req: Request, res: Response, next: NextFunction): Promise<void>;
+  deletePost(req: Request, res: Response, next: NextFunction): Promise<void>;
+  postLike(req: Request, res: Response, next: NextFunction): Promise<void>;
+  addImages(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
+export class PostController implements IPostController {
   constructor(private readonly postService: PostService) {}
 
-  async getPostLists(req: Request, res: Response, next: NextFunction) {
+  async getPostLists(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const categoryIdx = Number(req.query.categoryIdx);
 
     const postDto = new PostDto({
@@ -26,7 +39,11 @@ export class PostController {
     res.status(200).send(posts);
   }
 
-  async addPost(req: Request, res: Response, next: NextFunction) {
+  async addPost(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       categoryIdx: req.body.categoryIdx,
@@ -49,7 +66,11 @@ export class PostController {
     }
   }
 
-  async getPost(req: Request, res: Response, next: NextFunction) {
+  async getPost(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const postDto = new PostDto({
       postIdx: Number(req.params.postIdx),
     });
@@ -59,7 +80,11 @@ export class PostController {
     res.status(200).send(post);
   }
 
-  async putPost(req: Request, res: Response, next: NextFunction) {
+  async putPost(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const originalImageUrls = req.body.originalImageUrls as Array<string>;
 
     if (originalImageUrls.length !== 0) {
@@ -96,7 +121,11 @@ export class PostController {
     }
   }
 
-  async deletePost(req: Request, res: Response, next: NextFunction) {
+  async deletePost(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const originalImageUrls = req.body.originalImageUrls as Array<string>;
 
     if (originalImageUrls.length !== 0) {
@@ -130,7 +159,11 @@ export class PostController {
     }
   }
 
-  async postLike(req: Request, res: Response, next: NextFunction) {
+  async postLike(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       postIdx: Number(req.params.postIdx),
@@ -145,7 +178,11 @@ export class PostController {
     }
   }
 
-  async addImages(req: Request, res: Response, next: NextFunction) {
+  async addImages(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const images = req.files as Express.MulterS3.File[];
 
     if (!images || images.length === 0) {

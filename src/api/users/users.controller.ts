@@ -6,10 +6,27 @@ import {
   generateRefreshToken,
 } from "../../common/utils/token";
 
-export class UserController {
+interface IUserController {
+  signUp(req: Request, res: Response, next: NextFunction): Promise<void>;
+  login(req: Request, res: Response, next: NextFunction): Promise<void>;
+  logout(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getId(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getPw(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getUsersInfo(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getUserInfo(req: Request, res: Response, next: NextFunction): Promise<void>;
+  updateAuth(req: Request, res: Response, next: NextFunction): Promise<void>;
+  updateUserInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
+  withdrawal(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
+
+export class UserController implements IUserController {
   constructor(private readonly userService: UserService) {}
 
-  async signUp(req: Request, res: Response, next: NextFunction) {
+  async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userDto = new UserDto({
       userName: req.body.userName,
       idValue: req.body.idValue,
@@ -25,7 +42,7 @@ export class UserController {
     res.status(200).send();
   }
 
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userDto = new UserDto({
       idValue: req.body.idValue,
       pwValue: req.body.pwValue,
@@ -52,12 +69,12 @@ export class UserController {
     res.status(200).send({ accessToken: accessToken });
   }
 
-  async logout(req: Request, res: Response, next: NextFunction) {
+  async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     res.clearCookie("refreshToken");
     res.status(200).send();
   }
 
-  async getId(req: Request, res: Response, next: NextFunction) {
+  async getId(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userDto = new UserDto({
       userName: req.body.userName,
       email: req.body.email,
@@ -68,7 +85,7 @@ export class UserController {
     res.status(200).send({ idValue: userDto.idValue });
   }
 
-  async getPw(req: Request, res: Response, next: NextFunction) {
+  async getPw(req: Request, res: Response, next: NextFunction): Promise<void> {
     const userDto = new UserDto({
       userName: req.body.userName,
       idValue: req.body.idValue,
@@ -79,7 +96,11 @@ export class UserController {
     res.status(200).send({ pwValue: userDto.pwValue });
   }
 
-  async getUsersInfo(req: Request, res: Response, next: NextFunction) {
+  async getUsersInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const usersInfo = await this.userService.selectUsersInfo();
 
     if (typeof res.locals.accessToken === "undefined") {
@@ -89,7 +110,11 @@ export class UserController {
     }
   }
 
-  async getUserInfo(req: Request, res: Response, next: NextFunction) {
+  async getUserInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const userDto = new UserDto({
       accountIdx: res.locals.accountIdx,
     });
@@ -103,7 +128,11 @@ export class UserController {
     }
   }
 
-  async updateAuth(req: Request, res: Response, next: NextFunction) {
+  async updateAuth(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const userDto = new UserDto({
       accountIdx: res.locals.accountIdx,
       roleIdx: res.locals.roleIdx,
@@ -119,7 +148,11 @@ export class UserController {
     }
   }
 
-  async updateUserInfo(req: Request, res: Response, next: NextFunction) {
+  async updateUserInfo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const userDto = new UserDto({
       accountIdx: res.locals.accountIdx,
       userName: req.body.userName,
@@ -137,7 +170,11 @@ export class UserController {
     }
   }
 
-  async withdrawal(req: Request, res: Response, next: NextFunction) {
+  async withdrawal(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const userDto = new UserDto({
       accountIdx: res.locals.accountIdx,
     });

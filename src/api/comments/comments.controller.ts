@@ -3,10 +3,22 @@ import { CommentService } from "./comments.service";
 import { CommentDto } from "./dto/comment.dto";
 import { PostDto } from "../posts/dto/post.dto";
 
+interface ICommentController {
+  addComment(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getComments(req: Request, res: Response, next: NextFunction): Promise<void>;
+  putComment(req: Request, res: Response, next: NextFunction): Promise<void>;
+  deleteComment(req: Request, res: Response, next: NextFunction): Promise<void>;
+  commentLike(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
+
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  async addComment(req: Request, res: Response, next: NextFunction) {
+  async addComment(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const commentDto = new CommentDto({
       accountIdx: res.locals.accountIdx,
       postIdx: req.body.postIdx,
@@ -27,7 +39,11 @@ export class CommentController {
     }
   }
 
-  async getComments(req: Request, res: Response, next: NextFunction) {
+  async getComments(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const commentDto = new CommentDto({
       postIdx: Number(req.body.postIdx),
     });
@@ -44,7 +60,11 @@ export class CommentController {
     res.status(200).send(comments);
   }
 
-  async putComment(req: Request, res: Response, next: NextFunction) {
+  async putComment(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const commentDto = new CommentDto({
       accountIdx: res.locals.accountIdx,
       commentIdx: Number(req.params.commentIdx),
@@ -60,7 +80,11 @@ export class CommentController {
     }
   }
 
-  async deleteComment(req: Request, res: Response, next: NextFunction) {
+  async deleteComment(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const commentDto = new CommentDto({
       accountIdx: res.locals.accountIdx,
       commentIdx: Number(req.params.commentIdx),
@@ -75,7 +99,11 @@ export class CommentController {
     }
   }
 
-  async commentLike(req: Request, res: Response, next: NextFunction) {
+  async commentLike(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const commentDto = new CommentDto({
       accountIdx: res.locals.accountIdx,
       commentIdx: Number(req.params.commentIdx),
