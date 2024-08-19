@@ -1,14 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import { UnauthorizedException } from "../exception/UnauthorizedException";
 import jwt from "jsonwebtoken";
-import { jwtaccessSecretKey } from "../const/environment";
+import { jwtaccessSecretKey, jwtRefreshSecretKey } from "../const/environment";
+import { generateAccessToken } from "../utils/token";
 
-export async function verifyToken() {
+export function checkVerifyToken() {
   return function (req: Request, res: Response, next: NextFunction) {
     const accessTokenHeader = req.headers.authorization;
+    const refreshToken = req.cookies.refreshToken;
 
     if (!accessTokenHeader) {
       throw new UnauthorizedException("access token header is missing");
+    }
+
+    if (!refreshToken) {
+      throw new UnauthorizedException("login again");
     }
 
     let accessTokenValid = false;
@@ -21,19 +27,31 @@ export async function verifyToken() {
       }
     });
 
+    let accessTokenPayload;
+
     if (!accessTokenValid) {
-      res.locals.valid = false;
-      next();
+      const refreshDecoded = jwt.verify(
+        refreshToken,
+        jwtRefreshSecretKey
+      ) as jwt.JwtPayload;
+
+      const accessToken = generateAccessToken(
+        refreshDecoded.accountIdx,
+        refreshDecoded.roleIdx
+      );
+
+      accessTokenPayload = jwt.verify(
+        accessToken,
+        jwtaccessSecretKey
+      ) as jwt.JwtPayload;
     } else {
-      const accessTokenPayload = jwt.verify(
+      accessTokenPayload = jwt.verify(
         accessTokenHeader,
         jwtaccessSecretKey
       ) as jwt.JwtPayload;
-
-      res.locals.valid = true;
-      res.locals.accountIdx = accessTokenPayload.accountIdx;
-      res.locals.roleIdx = accessTokenPayload.roleIdx;
-      next();
     }
+    res.locals.accountIdx = accessTokenPayload.accountIdx;
+    res.locals.roleIdx = accessTokenPayload.roleIdx;
+    next();
   };
 }
