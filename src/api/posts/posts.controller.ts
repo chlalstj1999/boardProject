@@ -112,12 +112,20 @@ export class PostController implements IPostController {
       await s3.send(command);
     }
 
+    let imageUrls;
+
+    if (!req.body.imageUrls) {
+      imageUrls = [];
+    } else {
+      imageUrls = req.body.imageUrls;
+    }
+
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       postIdx: Number(req.params.postIdx),
       title: req.body.title,
       content: req.body.content,
-      imageUrls: req.body.imageUrls,
+      imageUrls: imageUrls,
     });
 
     await this.postService.updatePost(postDto);
