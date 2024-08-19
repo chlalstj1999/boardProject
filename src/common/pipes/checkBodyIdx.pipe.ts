@@ -1,14 +1,20 @@
+import { Request, Response, NextFunction } from "express";
 import { BadRequestException } from "../../common/exception/BadRequestException";
 
-export function checkParamIdx(params: string[]): number {
-  const bodyName = params[0];
-  const bodyIdx = params[1];
+export function checkBodyIdx(params: string[]) {
+  return function (req: Request, res: Response, next: NextFunction) {
+    try {
+      params.forEach((paramName) => {
+        const bodyIdx = req.params[paramName];
 
-  const bodyIdxNumber = Number(bodyIdx);
+        if (!bodyIdx) {
+          throw new BadRequestException(`${paramName}값이 안 옴`);
+        }
+      });
 
-  if (!bodyIdxNumber) {
-    throw new BadRequestException(`${bodyName}값이 안 옴`);
-  }
-
-  return bodyIdxNumber;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
 }

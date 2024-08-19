@@ -1,14 +1,20 @@
 import { BadRequestException } from "../../common/exception/BadRequestException";
+import { Request, Response, NextFunction } from "express";
 
-export function checkParamIdx(params: string[]): number {
-  const paramsName = params[0];
-  const paramsIdx = params[1];
+export function checkParamIdx(params: string[]) {
+  return function (req: Request, res: Response, next: NextFunction) {
+    try {
+      params.forEach((paramName) => {
+        const paramsIdx = req.params[paramName];
 
-  const paramsIdxNumber = Number(paramsIdx);
+        if (!paramsIdx) {
+          throw new BadRequestException(`${paramName}값이 안 옴`);
+        }
+      });
 
-  if (!paramsIdxNumber) {
-    throw new BadRequestException(`${paramsName}값이 안 옴`);
-  }
-
-  return paramsIdxNumber;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
 }

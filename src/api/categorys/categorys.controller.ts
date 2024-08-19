@@ -3,16 +3,10 @@ import { CategoryDto } from "./dto/category.dto";
 import { CategorysService } from "./categorys.service";
 import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { regx } from "../../common/const/regx";
-import { checkRole } from "../../common/pipes/checkAdmin.pipe";
 import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
-import { verifyToken } from "../../common/utils/token";
-import { AuthController } from "../auth/auth.controller";
 
 export class CategorysController {
-  constructor(
-    private readonly categoryService: CategorysService,
-    private readonly authController: AuthController
-  ) {}
+  constructor(private readonly categoryService: CategorysService) {}
 
   async addCategory(req: Request, res: Response, next: NextFunction) {
     isRegxMatch([["categoryName", regx.categoryNameRegx]])(req, res, next);

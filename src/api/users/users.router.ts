@@ -1,16 +1,31 @@
 import { Router } from "express";
 import { wrapper } from "../../common/utils/wrapper";
 import { controller } from "../index.controller";
-// import { csrfProtection } from "../../..";
+import isRegxMatch from "../../common/pipes/checkRegx.pipe";
+import { regx } from "../../common/const/regx";
+import { checkVerifyToken } from "../../common/pipes/checkVerifyToken.pipe";
+import { checkAdmin } from "../../common/pipes/checkAdmin.pipe";
 
 const userRouter = Router();
 
 userRouter.post(
   "/",
+  isRegxMatch([
+    ["userName", regx.userNameRegx],
+    ["idValue", regx.idRegx],
+    ["pwValue", regx.pwRegx],
+    ["email", regx.emailRegx],
+    ["gender", regx.genderRegx],
+    ["birth", regx.birthRegx],
+  ]),
   wrapper(controller.userController.signUp.bind(controller.userController))
 );
 userRouter.post(
   "/login",
+  isRegxMatch([
+    ["idValue", regx.idRegx],
+    ["pwValue", regx.pwRegx],
+  ]),
   wrapper(controller.userController.login.bind(controller.userController))
 );
 // userRouter.delete(
@@ -20,39 +35,54 @@ userRouter.post(
 // );
 userRouter.get(
   "/id",
+  isRegxMatch([
+    ["userName", regx.userNameRegx],
+    ["email", regx.emailRegx],
+  ]),
   wrapper(controller.userController.getId.bind(controller.userController))
 );
 userRouter.get(
   "/pw",
+  isRegxMatch([
+    ["userName", regx.userNameRegx],
+    ["idValue", regx.idRegx],
+  ]),
   wrapper(controller.userController.getPw.bind(controller.userController))
 );
 userRouter.get(
   "/",
-  // csrfProtection,
+  checkVerifyToken(),
   wrapper(
     controller.userController.getUsersInfo.bind(controller.userController)
   )
 );
 userRouter.get(
   "/me",
-  // csrfProtection,
+  checkVerifyToken(),
   wrapper(controller.userController.getUserInfo.bind(controller.userController))
 );
 userRouter.put(
   "/:userIdx/auth",
-  // csrfProtection,
+  checkVerifyToken(),
+  checkAdmin(),
   wrapper(controller.userController.updateAuth.bind(controller.userController))
 );
 userRouter.put(
   "/me",
-  // csrfProtection,
+  checkVerifyToken(),
+  isRegxMatch([
+    ["userName", regx.userNameRegx],
+    ["email", regx.emailRegx],
+    ["gender", regx.genderRegx],
+    ["birth", regx.birthRegx],
+  ]),
   wrapper(
     controller.userController.updateUserInfo.bind(controller.userController)
   )
 );
 userRouter.delete(
   "/me",
-  // csrfProtection,
+  checkVerifyToken(),
   wrapper(controller.userController.withdrawal.bind(controller.userController))
 );
 

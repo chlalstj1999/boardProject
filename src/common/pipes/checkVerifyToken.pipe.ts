@@ -6,52 +6,56 @@ import { generateAccessToken } from "../utils/token";
 
 export function checkVerifyToken() {
   return function (req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization;
-    const refreshToken = req.cookies.refreshToken;
+    try {
+      const accessTokenHeader = req.headers.authorization;
+      const refreshToken = req.cookies.refreshToken;
 
-    if (!accessTokenHeader) {
-      throw new UnauthorizedException("access token header is missing");
-    }
-
-    if (!refreshToken) {
-      throw new UnauthorizedException("login again");
-    }
-
-    let accessTokenValid = false;
-
-    jwt.verify(accessTokenHeader, jwtaccessSecretKey, (err, decoded) => {
-      if (err) {
-        accessTokenValid = false;
-      } else {
-        accessTokenValid = true;
+      if (!accessTokenHeader) {
+        throw new UnauthorizedException("access token header is missing");
       }
-    });
 
-    let accessTokenPayload;
+      if (!refreshToken) {
+        throw new UnauthorizedException("login again");
+      }
 
-    if (!accessTokenValid) {
-      const refreshDecoded = jwt.verify(
-        refreshToken,
-        jwtRefreshSecretKey
-      ) as jwt.JwtPayload;
+      let accessTokenValid = false;
 
-      const accessToken = generateAccessToken(
-        refreshDecoded.accountIdx,
-        refreshDecoded.roleIdx
-      );
+      jwt.verify(accessTokenHeader, jwtaccessSecretKey, (err, decoded) => {
+        if (err) {
+          accessTokenValid = false;
+        } else {
+          accessTokenValid = true;
+        }
+      });
 
-      accessTokenPayload = jwt.verify(
-        accessToken,
-        jwtaccessSecretKey
-      ) as jwt.JwtPayload;
-    } else {
-      accessTokenPayload = jwt.verify(
-        accessTokenHeader,
-        jwtaccessSecretKey
-      ) as jwt.JwtPayload;
+      let accessTokenPayload;
+
+      if (!accessTokenValid) {
+        const refreshDecoded = jwt.verify(
+          refreshToken,
+          jwtRefreshSecretKey
+        ) as jwt.JwtPayload;
+
+        const accessToken = generateAccessToken(
+          refreshDecoded.accountIdx,
+          refreshDecoded.roleIdx
+        );
+
+        accessTokenPayload = jwt.verify(
+          accessToken,
+          jwtaccessSecretKey
+        ) as jwt.JwtPayload;
+      } else {
+        accessTokenPayload = jwt.verify(
+          accessTokenHeader,
+          jwtaccessSecretKey
+        ) as jwt.JwtPayload;
+      }
+      res.locals.accountIdx = accessTokenPayload.accountIdx;
+      res.locals.roleIdx = accessTokenPayload.roleIdx;
+      next();
+    } catch (err) {
+      next(err);
     }
-    res.locals.accountIdx = accessTokenPayload.accountIdx;
-    res.locals.roleIdx = accessTokenPayload.roleIdx;
-    next();
   };
 }

@@ -4,12 +4,16 @@ import { UnauthorizedException } from "../../common/exception/UnauthorizedExcept
 
 export function checkAdmin() {
   return async function (req: Request, res: Response, next: NextFunction) {
-    const roleIdx = res.locals.roleIdx;
+    try {
+      const roleIdx = res.locals.roleIdx;
 
-    if (roleIdx !== admin) {
-      throw new UnauthorizedException("관리자 권한 필요");
+      if (roleIdx !== admin) {
+        throw new UnauthorizedException("관리자 권한 필요");
+      }
+
+      next();
+    } catch (err) {
+      next(err);
     }
-
-    next();
   };
 }

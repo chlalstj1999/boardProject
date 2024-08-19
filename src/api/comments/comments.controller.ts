@@ -5,14 +5,9 @@ import { regx } from "../../common/const/regx";
 import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { PostDto } from "../posts/dto/post.dto";
 import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
-import { verifyToken } from "../../common/utils/token";
-import { AuthController } from "../auth/auth.controller";
 
 export class CommentController {
-  constructor(
-    private readonly commentService: CommentService,
-    private readonly authController: AuthController
-  ) {}
+  constructor(private readonly commentService: CommentService) {}
 
   async addComment(req: Request, res: Response, next: NextFunction) {
     const accessTokenHeader = req.headers.authorization!;

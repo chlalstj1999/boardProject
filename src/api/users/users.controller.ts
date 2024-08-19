@@ -3,31 +3,16 @@ import { UserService } from "./users.service";
 import isRegxMatch from "../../common/pipes/checkRegx.pipe";
 import { regx } from "../../common/const/regx";
 import { UserDto } from "./dto/user.dto";
-import { checkRole } from "../../common/pipes/checkAdmin.pipe";
 import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
 import {
   generateAccessToken,
   generateRefreshToken,
-  verifyToken,
 } from "../../common/utils/token";
-import { AuthController } from "../auth/auth.controller";
 
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly authController: AuthController
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   async signUp(req: Request, res: Response, next: NextFunction) {
-    isRegxMatch([
-      ["userName", regx.userNameRegx],
-      ["idValue", regx.idRegx],
-      ["pwValue", regx.pwRegx],
-      ["email", regx.emailRegx],
-      ["gender", regx.genderRegx],
-      ["birth", regx.birthRegx],
-    ])(req, res, next);
-
     const userDto = new UserDto({
       userName: req.body.userName,
       idValue: req.body.idValue,
@@ -44,11 +29,6 @@ export class UserController {
   }
 
   async login(req: Request, res: Response, next: NextFunction) {
-    isRegxMatch([
-      ["idValue", regx.idRegx],
-      ["pwValue", regx.pwRegx],
-    ])(req, res, next);
-
     const userDto = new UserDto({
       idValue: req.body.idValue,
       pwValue: req.body.pwValue,
@@ -86,11 +66,6 @@ export class UserController {
   // }
 
   async getId(req: Request, res: Response, next: NextFunction) {
-    isRegxMatch([
-      ["userName", regx.userNameRegx],
-      ["email", regx.emailRegx],
-    ])(req, res, next);
-
     const userDto = new UserDto({
       userName: req.body.userName,
       email: req.body.email,
@@ -102,11 +77,6 @@ export class UserController {
   }
 
   async getPw(req: Request, res: Response, next: NextFunction) {
-    isRegxMatch([
-      ["userName", regx.userNameRegx],
-      ["idValue", regx.idRegx],
-    ])(req, res, next);
-
     const userDto = new UserDto({
       userName: req.body.userName,
       idValue: req.body.idValue,
@@ -118,26 +88,6 @@ export class UserController {
   }
 
   async getUsersInfo(req: Request, res: Response, next: NextFunction) {
-    // CheckLoginPipe.checkLogin(req.session.accountIdx);
-    // CheckAdminPipe.checkRole(req.session.roleIdx);
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let roleIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      roleIdx = validNewAccessToken.roleIdx;
-    } else {
-      roleIdx = validAccessToken.roleIdx;
-    }
-
-    checkRole(roleIdx);
-
     const usersInfo = await this.userService.selectUsersInfo();
 
     if (typeof res.locals.accessToken !== undefined) {
@@ -148,24 +98,8 @@ export class UserController {
   }
 
   async getUserInfo(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const userDto = new UserDto({
-      accountIdx: accountIdx,
+      accountIdx: res.locals.accountIdx,
     });
 
     await this.userService.selectUserInfo(userDto);
@@ -178,27 +112,9 @@ export class UserController {
   }
 
   async updateAuth(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-    let roleIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-      roleIdx = validNewAccessToken.roleIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-      roleIdx = validAccessToken.roleIdx;
-    }
     const userDto = new UserDto({
-      accountIdx: accountIdx,
-      roleIdx: checkRole(roleIdx),
+      accountIdx: res.locals.accountIdx,
+      roleIdx: res.locals.roleIdx,
       userIdx: checkParamIdx(["userIdx", req.params.userIdx]),
     });
 
@@ -212,31 +128,8 @@ export class UserController {
   }
 
   async updateUserInfo(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
-    isRegxMatch([
-      ["userName", regx.userNameRegx],
-      ["email", regx.emailRegx],
-      ["gender", regx.genderRegx],
-      ["birth", regx.birthRegx],
-    ])(req, res, next);
-
     const userDto = new UserDto({
-      accountIdx: accountIdx,
+      accountIdx: res.locals.accountIdx,
       userName: req.body.userName,
       email: req.body.email,
       gender: req.body.gender,
@@ -253,24 +146,8 @@ export class UserController {
   }
 
   async withdrawal(req: Request, res: Response, next: NextFunction) {
-    const accessTokenHeader = req.headers.authorization!;
-
-    const validAccessToken = await verifyToken(accessTokenHeader);
-
-    let accountIdx;
-
-    if (!validAccessToken.valid) {
-      await this.authController.regenrateAccessToken(req, res, next);
-
-      const validNewAccessToken = await verifyToken(res.locals.accessToken);
-
-      accountIdx = validNewAccessToken.accountIdx;
-    } else {
-      accountIdx = validAccessToken.accountIdx;
-    }
-
     const userDto = new UserDto({
-      accountIdx: accountIdx,
+      accountIdx: res.locals.accountIdx,
     });
 
     await this.userService.deleteUser(userDto);

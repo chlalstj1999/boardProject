@@ -6,18 +6,13 @@ import { regx } from "../../common/const/regx";
 import { CategoryDto } from "../categorys/dto/category.dto";
 import { checkQueryIdx } from "../../common/pipes/checkQueryIdx.pipe";
 import { checkParamIdx } from "../../common/pipes/checkParamIdx.pipe";
-import { verifyToken } from "../../common/utils/token";
-import { AuthController } from "../auth/auth.controller";
 import { BadRequestException } from "../../common/exception/BadRequestException";
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { bucketName } from "../../common/const/environment";
 import { s3 } from "../../common/const/s3Client";
 
 export class PostController {
-  constructor(
-    private readonly postService: PostService,
-    private readonly authController: AuthController
-  ) {}
+  constructor(private readonly postService: PostService) {}
 
   async getPostLists(req: Request, res: Response, next: NextFunction) {
     const categoryIdx = checkQueryIdx(["categoryIdx", req.query.categoryIdx]);
