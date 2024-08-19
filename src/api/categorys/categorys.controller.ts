@@ -12,10 +12,10 @@ export class CategorysController {
 
     await this.categoryService.createCategory(categoryDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -33,10 +33,10 @@ export class CategorysController {
 
     await this.categoryService.updateCategory(categoryDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -47,10 +47,10 @@ export class CategorysController {
 
     await this.categoryService.deleteCategory(categoryDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 }

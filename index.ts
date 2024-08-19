@@ -9,7 +9,6 @@ import postRouter from "./src/api/posts/posts.router";
 import commentRouter from "./src/api/comments/comments.router";
 import { NotFoundException } from "./src/common/exception/NotFoundException";
 import cookieParser from "cookie-parser";
-import authRouter from "./src/api/auth/auth.router";
 
 const app = express();
 
@@ -37,7 +36,6 @@ app.use(logRequests);
 //   res.send({ files: req.files, file: req.file });
 // });
 
-app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/categorys", categoryRouter);
 app.use("/posts", postRouter);

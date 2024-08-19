@@ -20,10 +20,10 @@ export class CommentController {
 
     await this.commentService.createComment(commentDto, postDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -53,10 +53,10 @@ export class CommentController {
 
     await this.commentService.updateComment(commentDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -68,10 +68,10 @@ export class CommentController {
 
     await this.commentService.deleteComment(commentDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -83,10 +83,10 @@ export class CommentController {
 
     await this.commentService.updateCommentLike(commentDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 }

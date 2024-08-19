@@ -53,14 +53,16 @@ export class UserController {
     res.status(200).send({ accessToken: accessToken });
   }
 
-  // async logout(req: Request, res: Response, next: NextFunction) {
-  //   // req.session.destroy((err) => {
-  //   //   if (err) {
-  //   //     throw new InternalServerErrorException("l1ogout failed");
-  //   //   }
-  //   //   res.status(200).send();
-  //   // });
-  // }
+  async logout(req: Request, res: Response, next: NextFunction) {
+    // req.session.destroy((err) => {
+    //   if (err) {
+    //     throw new InternalServerErrorException("l1ogout failed");
+    //   }
+    //   res.status(200).send();
+    // });
+    res.clearCookie("refreshToken");
+    res.status(200).send();
+  }
 
   async getId(req: Request, res: Response, next: NextFunction) {
     const userDto = new UserDto({
@@ -87,10 +89,10 @@ export class UserController {
   async getUsersInfo(req: Request, res: Response, next: NextFunction) {
     const usersInfo = await this.userService.selectUsersInfo();
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken, usersInfo });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send(usersInfo);
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken, usersInfo });
     }
   }
 
@@ -101,10 +103,10 @@ export class UserController {
 
     await this.userService.selectUserInfo(userDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken, userDto });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send(userDto);
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken, userDto });
     }
   }
 
@@ -117,10 +119,10 @@ export class UserController {
 
     await this.userService.updateAuth(userDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken, userDto });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken, userDto });
     }
   }
 
@@ -135,10 +137,10 @@ export class UserController {
 
     await this.userService.updatUserInfo(userDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -149,10 +151,10 @@ export class UserController {
 
     await this.userService.deleteUser(userDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.clearCookie("refreshToken");
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
     } else {
+      res.clearCookie("refreshToken");
       res.status(200).send();
     }
   }

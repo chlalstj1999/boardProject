@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { PostService } from "./posts.service";
 import { PostDto } from "./dto/post.dto";
-import isRegxMatch from "../../common/pipes/checkRegx.pipe";
-import { regx } from "../../common/const/regx";
 import { CategoryDto } from "../categorys/dto/category.dto";
 import { BadRequestException } from "../../common/exception/BadRequestException";
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
@@ -44,10 +42,10 @@ export class PostController {
 
     await this.postService.createPost(postDto, categoryDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -62,11 +60,6 @@ export class PostController {
   }
 
   async putPost(req: Request, res: Response, next: NextFunction) {
-    isRegxMatch([
-      ["title", regx.postTitleRegx],
-      ["content", regx.postContentRegx],
-    ])(req, res, next);
-
     const originalImageUrls = req.body.originalImageUrls as Array<string>;
 
     if (originalImageUrls.length !== 0) {
@@ -96,10 +89,10 @@ export class PostController {
 
     await this.postService.updatePost(postDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -130,10 +123,10 @@ export class PostController {
 
     await this.postService.deletePost(postDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -145,10 +138,10 @@ export class PostController {
 
     await this.postService.updatePostLike(postDto);
 
-    if (typeof res.locals.accessToken !== undefined) {
-      res.status(200).send({ accessToken: res.locals.accessToken });
-    } else {
+    if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();
+    } else {
+      res.status(200).send({ accessToken: res.locals.accessToken });
     }
   }
 
@@ -165,12 +158,12 @@ export class PostController {
       })
     );
 
-    if (typeof res.locals.accessToken !== undefined) {
+    if (typeof res.locals.accessToken === "undefined") {
+      res.status(200).send({ imageUrls: path });
+    } else {
       res
         .status(200)
         .send({ accessToken: res.locals.accessToken, imageUrls: path });
-    } else {
-      res.status(200).send({ imageUrls: path });
     }
   }
 }
