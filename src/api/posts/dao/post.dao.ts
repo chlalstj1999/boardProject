@@ -217,9 +217,12 @@ export class PostRepository implements IpostRepository {
     await conn.query(`DELETE FROM project.post WHERE idx = $1`, [
       postDto.postIdx,
     ]);
-    await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
-      postDto.postIdx,
-    ]);
+
+    if (postDto.isImage) {
+      await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
+        postDto.postIdx,
+      ]);
+    }
     await conn.query("COMMIT");
   }
 
