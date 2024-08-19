@@ -41,8 +41,7 @@ export class UserController {
       userDto.accountIdx!,
       userDto.roleIdx!
     );
-    // req.session.accountIdx = userDto.accountIdx;
-    // req.session.roleIdx = userDto.roleIdx;
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
@@ -54,12 +53,6 @@ export class UserController {
   }
 
   async logout(req: Request, res: Response, next: NextFunction) {
-    // req.session.destroy((err) => {
-    //   if (err) {
-    //     throw new InternalServerErrorException("l1ogout failed");
-    //   }
-    //   res.status(200).send();
-    // });
     res.clearCookie("refreshToken");
     res.status(200).send();
   }

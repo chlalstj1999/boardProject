@@ -29,11 +29,11 @@ userRouter.post(
   ]),
   wrapper(controller.userController.login.bind(controller.userController))
 );
-// userRouter.delete(
-//   "/logout",
-//   // csrfProtection,
-//   wrapper(controller.userController.logout.bind(controller.userController))
-// );
+userRouter.delete(
+  "/logout",
+  checkVerifyToken(),
+  wrapper(controller.userController.logout.bind(controller.userController))
+);
 userRouter.get(
   "/id",
   isRegxMatch([
@@ -53,6 +53,7 @@ userRouter.get(
 userRouter.get(
   "/",
   checkVerifyToken(),
+  checkAdmin(),
   wrapper(
     controller.userController.getUsersInfo.bind(controller.userController)
   )

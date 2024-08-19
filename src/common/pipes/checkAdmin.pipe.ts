@@ -6,6 +6,7 @@ export function checkAdmin() {
   return async function (req: Request, res: Response, next: NextFunction) {
     try {
       const roleIdx = res.locals.roleIdx;
+      console.log(roleIdx);
 
       if (roleIdx !== admin) {
         throw new UnauthorizedException("관리자 권한 필요");
