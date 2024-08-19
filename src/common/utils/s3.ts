@@ -11,6 +11,7 @@ type FileNameCallback = (error: Error | null, filename: string) => void;
 
 const allowedExtensions = [".png", ".jpg", ".jpeg", ".bmp"];
 
+// multer는 Node.js에서 form-data를 저장하기 위한 모듈이며 s3는 아마존에서 서비스하는 클라우드 저장소
 export const upload = multer({
   storage: multerS3({
     s3: s3,

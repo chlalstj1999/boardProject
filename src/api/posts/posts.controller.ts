@@ -44,21 +44,13 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    let imageUrls;
-
-    if (!req.body.imageUrls) {
-      imageUrls = [];
-    } else {
-      imageUrls = req.body.imageUrls;
-    }
-
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       categoryIdx: req.body.categoryIdx,
       title: req.body.title,
       content: req.body.content,
       likes: 0,
-      imageUrls: imageUrls,
+      imageUrls: req.body.imageUrls,
     });
 
     const categoryDto = new CategoryDto({
@@ -112,20 +104,12 @@ export class PostController implements IPostController {
       await s3.send(command);
     }
 
-    let imageUrls;
-
-    if (!req.body.imageUrls) {
-      imageUrls = [];
-    } else {
-      imageUrls = req.body.imageUrls;
-    }
-
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       postIdx: Number(req.params.postIdx),
       title: req.body.title,
       content: req.body.content,
-      imageUrls: imageUrls,
+      imageUrls: req.body.imageUrls,
     });
 
     await this.postService.updatePost(postDto);
