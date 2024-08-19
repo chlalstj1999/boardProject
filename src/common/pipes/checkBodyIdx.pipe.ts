@@ -7,7 +7,7 @@ export function checkBodyIdx(params: string[]) {
       params.forEach((paramName) => {
         const bodyIdx = req.params[paramName];
 
-        if (!bodyIdx) {
+        if (typeof bodyIdx !== "number") {
           throw new BadRequestException(`${paramName}값이 안 옴`);
         }
       });
