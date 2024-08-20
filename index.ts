@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
-// import session from "express-session";
+import session from "express-session";
 import { Exception } from "./src/common/exception/Exception";
 import userRouter from "./src/api/users/users.router";
 import categoryRouter from "./src/api/categorys/categorys.router";
@@ -9,25 +9,25 @@ import postRouter from "./src/api/posts/posts.router";
 import commentRouter from "./src/api/comments/comments.router";
 import { NotFoundException } from "./src/common/exception/NotFoundException";
 import cookieParser from "cookie-parser";
+import { sessionSecret } from "./src/common/const/environment";
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-// app.use(
-//   session({
-//     secret: sessionSecret,
-//     resave: false,
-//     saveUninitialized: true,
-//   })
-// );
+app.use(
+  session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-// declare module "express-session" {
-//   interface SessionData {
-//     accountIdx: number;
-//     roleIdx: number;
-//   }
-// }
+declare module "express-session" {
+  interface SessionData {
+    state: string;
+  }
+}
 
 app.use(logRequests);
 

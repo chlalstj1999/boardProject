@@ -15,6 +15,7 @@ export const redisHost = process.env.REDIS_HOST!;
 
 export const googleClientId = process.env.GOOGLE_CLIENT_ID!;
 export const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;
+export const googleRedirectUrl = process.env.GOOGLE_REDIRECT_URI!;
 
 export const s3AccessKey = process.env.S3_ACCESS_KEY!;
 export const s3SecretKey = process.env.S3_SECRET_KEY!;
