@@ -41,6 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err: Exception, req: Request, res: Response, next: NextFunction) => {
+  // 의미가 없는 if 문
   if (err.message === "jwt expired") {
     res.status(401).send({
       message: err.message,
