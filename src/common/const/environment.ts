@@ -17,6 +17,10 @@ export const googleClientId = process.env.GOOGLE_CLIENT_ID!;
 export const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;
 export const googleRedirectUrl = process.env.GOOGLE_REDIRECT_URI!;
 
+export const kakaoClientId = process.env.KAKAO_CLIENT_ID!;
+export const kakaoClientSecret = process.env.KAKAO_CLIENT_SECRET!;
+export const kakaoRedirectUrl = process.env.KAKAO_REDIRECT_URI!;
+
 export const s3AccessKey = process.env.S3_ACCESS_KEY!;
 export const s3SecretKey = process.env.S3_SECRET_KEY!;
 export const bucketName = process.env.BUCKET_NAME!;

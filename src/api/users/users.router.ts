@@ -41,6 +41,16 @@ userRouter.get(
     )
   )
 );
+userRouter.get(
+  "/login/kakao",
+  wrapper(controller.userController.kakaoLogin.bind(controller.userController))
+);
+userRouter.get(
+  "/auth/kakao/callback",
+  wrapper(
+    controller.userController.kakaoOAuthCallback.bind(controller.userController)
+  )
+);
 userRouter.delete(
   "/logout",
   checkVerifyToken(),

@@ -8,7 +8,12 @@ import {
 import crypto from "node:crypto";
 import { oauth2Client } from "../../common/const/googleOAuthClient";
 import { ForbiddenException } from "../../common/exception/ForbiddenException";
-import { googleRedirectUrl } from "../../common/const/environment";
+import {
+  googleRedirectUrl,
+  kakaoClientId,
+  kakaoClientSecret,
+  kakaoRedirectUrl,
+} from "../../common/const/environment";
 import axios from "axios";
 
 interface IUserController {
@@ -32,6 +37,14 @@ interface IUserController {
     next: NextFunction
   ): Promise<void>;
   withdrawal(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
+
+interface KakaoAccount {
+  email: string;
+}
+
+interface KakaoUserInfoResponse {
+  kakao_account: KakaoAccount;
 }
 
 export class UserController implements IUserController {
@@ -138,6 +151,84 @@ export class UserController implements IUserController {
 
     const userDto = new UserDto({
       email: googleEmail!,
+    });
+
+    await this.userService.selectUserByEmail(userDto);
+
+    if (typeof userDto.accountIdx === "undefined") {
+      throw new ForbiddenException("회원가입 필요");
+    }
+
+    const accessToken = generateAccessToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+    const refreshToken = generateRefreshToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 7 * 3600 * 24,
+      sameSite: "strict",
+    });
+
+    res.status(200).send({ accessToken: accessToken });
+  }
+
+  async kakaoLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    res.redirect(
+      `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUrl}`
+    );
+  }
+
+  async kakaoOAuthCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const authorizationCode = req.query.code as string;
+
+    const tokenResponse = await axios.post<{ access_token: string }>(
+      "https://kauth.kakao.com/oauth/token",
+      {
+        code: authorizationCode,
+        client_id: kakaoClientId,
+        client_secret: kakaoClientSecret,
+        redirect_uri: kakaoRedirectUrl,
+        grant_type: "authorization_code",
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const tokens = tokenResponse.data;
+
+    const userInfoResponse = await axios.get<KakaoUserInfoResponse>(
+      "https://kapi.kakao.com/v2/user/me",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
+    );
+
+    console.log(userInfoResponse);
+
+    const kakaoEmail = userInfoResponse.data.kakao_account.email;
+
+    const userDto = new UserDto({
+      email: kakaoEmail!,
     });
 
     await this.userService.selectUserByEmail(userDto);
