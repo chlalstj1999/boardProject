@@ -5,11 +5,22 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../../common/utils/token";
+import crypto from "node:crypto";
+import { oauth2Client } from "../../common/const/googleOAuthClient";
+import { ForbiddenException } from "../../common/exception/ForbiddenException";
+import { googleRedirectUrl } from "../../common/const/environment";
+import axios from "axios";
 
 interface IUserController {
   signUp(req: Request, res: Response, next: NextFunction): Promise<void>;
   login(req: Request, res: Response, next: NextFunction): Promise<void>;
   logout(req: Request, res: Response, next: NextFunction): Promise<void>;
+  googleLogin(req: Request, res: Response, next: NextFunction): Promise<void>;
+  googleOAuthCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void>;
   getId(req: Request, res: Response, next: NextFunction): Promise<void>;
   getPw(req: Request, res: Response, next: NextFunction): Promise<void>;
   getUsersInfo(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -49,6 +60,91 @@ export class UserController implements IUserController {
     });
 
     await this.userService.selectUser(userDto);
+
+    const accessToken = generateAccessToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+    const refreshToken = generateRefreshToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 7 * 3600 * 24,
+      sameSite: "strict",
+    });
+
+    res.status(200).send({ accessToken: accessToken });
+  }
+
+  async googleLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const scopes = ["https://www.googleapis.com/auth/userinfo.email"];
+
+    const state = crypto.randomBytes(32).toString("hex");
+
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: scopes,
+      include_granted_scopes: true,
+      state: state,
+    });
+
+    res.redirect(authorizationUrl);
+  }
+
+  async googleOAuthCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const authorizationCode = req.query.code as string;
+
+    const tokenResponse = await axios.post<{ access_token: string }>(
+      "https://oauth2.googleapis.com/token",
+      {
+        code: authorizationCode,
+        client_id: oauth2Client._clientId,
+        client_secret: oauth2Client._clientSecret,
+        redirect_uri: googleRedirectUrl,
+        grant_type: "authorization_code",
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const tokens = tokenResponse.data;
+    oauth2Client.setCredentials(tokens);
+
+    const userInfoResponse = await axios.get<{ email: string }>(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
+    );
+
+    const googleEmail = userInfoResponse.data.email;
+
+    const userDto = new UserDto({
+      email: googleEmail!,
+    });
+
+    await this.userService.selectUserByEmail(userDto);
+
+    if (typeof userDto.accountIdx === "undefined") {
+      throw new ForbiddenException("회원가입 필요");
+    }
 
     const accessToken = generateAccessToken(
       userDto.accountIdx!,

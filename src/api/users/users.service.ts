@@ -98,4 +98,15 @@ export class UserService implements IuserService {
   async deleteUser(userDto: UserDto): Promise<void> {
     await this.userRepository.deleteUser(userDto, this.pool);
   }
+
+  async selectUserByEmail(userDto: UserDto): Promise<UserDto> {
+    const isUser = await this.userRepository.selectByEmail(userDto, this.pool);
+
+    if (isUser.length !== 0) {
+      userDto.accountIdx = isUser[0].accountIdx;
+      userDto.roleIdx = isUser[0].roleIdx;
+    }
+
+    return userDto;
+  }
 }

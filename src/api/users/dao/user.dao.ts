@@ -50,7 +50,7 @@ export class UserRepository implements IuserRepository {
     conn: Pool = this.pool
   ): Promise<any[]> {
     const duplicatedEmailQueryResult = await conn.query(
-      `SELECT 1 FROM project.account WHERE email=$1`,
+      `SELECT "idx" AS "accountIdx", "roleIdx" FROM project.account WHERE email=$1`,
       [userDto.email]
     );
 

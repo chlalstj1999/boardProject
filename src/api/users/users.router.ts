@@ -29,6 +29,18 @@ userRouter.post(
   ]),
   wrapper(controller.userController.login.bind(controller.userController))
 );
+userRouter.get(
+  "/login/google",
+  wrapper(controller.userController.googleLogin.bind(controller.userController))
+);
+userRouter.get(
+  "/auth/google/callback",
+  wrapper(
+    controller.userController.googleOAuthCallback.bind(
+      controller.userController
+    )
+  )
+);
 userRouter.delete(
   "/logout",
   checkVerifyToken(),

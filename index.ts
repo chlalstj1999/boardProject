@@ -15,19 +15,19 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  session({
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// app.use(
+//   session({
+//     secret: sessionSecret,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
-declare module "express-session" {
-  interface SessionData {
-    state: string;
-  }
-}
+// declare module "express-session" {
+//   interface SessionData {
+//     state: string;
+//   }
+// }
 
 app.use(logRequests);
 
