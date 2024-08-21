@@ -314,10 +314,10 @@ export class UserController implements IUserController {
       }
     );
 
-    const kakaoEmail = userInfoResponse.data.response.email;
+    const naverEmail = userInfoResponse.data.response.email;
 
     const userDto = new UserDto({
-      email: kakaoEmail!,
+      email: naverEmail!,
     });
 
     await this.userService.selectUserByEmail(userDto);
