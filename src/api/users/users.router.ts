@@ -51,6 +51,16 @@ userRouter.get(
     controller.userController.kakaoOAuthCallback.bind(controller.userController)
   )
 );
+userRouter.get(
+  "/login/naver",
+  wrapper(controller.userController.naverLogin.bind(controller.userController))
+);
+userRouter.get(
+  "/auth/naver/callback",
+  wrapper(
+    controller.userController.naverOAuthCallback.bind(controller.userController)
+  )
+);
 userRouter.delete(
   "/logout",
   checkVerifyToken(),

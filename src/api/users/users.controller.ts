@@ -13,6 +13,9 @@ import {
   kakaoClientId,
   kakaoClientSecret,
   kakaoRedirectUrl,
+  naverClientId,
+  naverClientSecret,
+  naverRedirectUrl,
 } from "../../common/const/environment";
 import axios from "axios";
 
@@ -45,6 +48,14 @@ interface KakaoAccount {
 
 interface KakaoUserInfoResponse {
   kakao_account: KakaoAccount;
+}
+
+interface naverAccount {
+  email: string;
+}
+
+interface naverUserInfoResponse {
+  response: naverAccount;
 }
 
 export class UserController implements IUserController {
@@ -223,9 +234,87 @@ export class UserController implements IUserController {
       }
     );
 
-    console.log(userInfoResponse);
-
     const kakaoEmail = userInfoResponse.data.kakao_account.email;
+
+    const userDto = new UserDto({
+      email: kakaoEmail!,
+    });
+
+    await this.userService.selectUserByEmail(userDto);
+
+    if (typeof userDto.accountIdx === "undefined") {
+      throw new ForbiddenException("회원가입 필요");
+    }
+
+    const accessToken = generateAccessToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+    const refreshToken = generateRefreshToken(
+      userDto.accountIdx!,
+      userDto.roleIdx!
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 7 * 3600 * 24,
+      sameSite: "strict",
+    });
+
+    res.status(200).send({ accessToken: accessToken });
+  }
+
+  async naverLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const state = crypto.randomBytes(32).toString("hex");
+
+    res.redirect(
+      `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${naverRedirectUrl}&state=${state}`
+    );
+  }
+
+  async naverOAuthCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const authorizationCode = req.query.code as string;
+    const authorizationState = req.query.state as string;
+
+    const tokenResponse = await axios.post<{ access_token: string }>(
+      "https://nid.naver.com/oauth2.0/token",
+      {
+        code: authorizationCode,
+        state: authorizationState,
+        client_id: naverClientId,
+        client_secret: naverClientSecret,
+        redirect_uri: naverRedirectUrl,
+        grant_type: "authorization_code",
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const tokens = tokenResponse.data;
+
+    const userInfoResponse = await axios.get<naverUserInfoResponse>(
+      "https://openapi.naver.com/v1/nid/me",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
+    );
+
+    const kakaoEmail = userInfoResponse.data.response.email;
 
     const userDto = new UserDto({
       email: kakaoEmail!,
