@@ -83,8 +83,6 @@ export class PostService implements IPostService {
       throw new ConflictException("같은 제목이 존재함");
     }
 
-    await this.postRepository.isImageTable(postDto, this.pool);
-
     postDto.isSameImage = false;
 
     if (postDto.imageUrls?.length === postDto.originalImageUrls?.length) {
@@ -109,8 +107,6 @@ export class PostService implements IPostService {
     if (postDto.accountIdx !== postDto.authorIdx) {
       throw new UnauthorizedException("해당 작성자만 가능");
     }
-
-    await this.postRepository.isImageTable(postDto, this.pool);
 
     await this.postRepository.deletePost(postDto, this.pool);
   }

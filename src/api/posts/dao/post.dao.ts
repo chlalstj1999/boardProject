@@ -114,27 +114,8 @@ export class PostRepository implements IpostRepository {
     return postDto;
   }
 
-  async isImageTable(
-    postDto: PostDto,
-    conn: Pool = this.pool
-  ): Promise<PostDto> {
-    const isImageTableQueryResult = await conn.query(
-      `SELECT "imageUrls" FROM project.image WHERE "postIdx"=$1`,
-      [postDto.postIdx]
-    );
-
-    if (isImageTableQueryResult.rows.length === 0) {
-      postDto.isImage = false;
-      postDto.originalImageUrls = [];
-    } else {
-      postDto.isImage = true;
-      postDto.originalImageUrls = isImageTableQueryResult.rows[0].imageUrls;
-    }
-
-    return postDto;
-  }
-
   async getPost(postDto: PostDto, conn: Pool = this.pool): Promise<PostDto> {
+    await conn.query("BEGIN");
     const postQueryResult = await conn.query(
       `SELECT post.idx AS "postIdx", account.name AS "userName", post.title, post.content, post."createdAt", post."countLike" AS "cntPostLike"
       FROM project.post 
@@ -152,12 +133,17 @@ export class PostRepository implements IpostRepository {
     }
 
     const imageQueryResult = await conn.query(
-      `SELECT "imageUrls" FROM project.image WHERE "postIdx" = $1`,
+      `SELECT "imageUrl" FROM project.image WHERE "postIdx" = $1 ORDER BY "imageOrder" ASC;`,
       [postDto.postIdx]
     );
+    await conn.query("COMMIT");
 
     if (imageQueryResult.rows.length !== 0) {
-      postDto.imageUrls = imageQueryResult.rows[0].imageUrls;
+      postDto.imageUrls = [];
+
+      for (let i = 0; i < imageQueryResult.rows.length; i++) {
+        postDto.imageUrls?.push(imageQueryResult.rows[i].imageUrl);
+      }
     }
 
     return postDto;

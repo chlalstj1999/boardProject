@@ -14,7 +14,7 @@ interface IPostController {
   putPost(req: Request, res: Response, next: NextFunction): Promise<void>;
   deletePost(req: Request, res: Response, next: NextFunction): Promise<void>;
   postLike(req: Request, res: Response, next: NextFunction): Promise<void>;
-  addImages(req: Request, res: Response, next: NextFunction): Promise<void>;
+  addImages(req: Request, res: Response, next: NextFunction): void;
 }
 export class PostController implements IPostController {
   constructor(private readonly postService: PostService) {}
@@ -67,21 +67,9 @@ export class PostController implements IPostController {
       }
     } catch (err) {
       if (postDto.imageUrls?.length !== 0) {
-        const keys = await Promise.all(
-          postDto.imageUrls!.map((imageUrl) => {
-            return { Key: imageUrl.split("/").slice(-1)[0] };
-          })
-        );
-
-        const command = new DeleteObjectsCommand({
-          Bucket: bucketName,
-          Delete: { Objects: keys },
-        });
-
-        await s3.send(command);
-
-        next(err);
+        await this.deleteImages(postDto.imageUrls!);
       }
+      next(err);
     }
   }
 
@@ -107,20 +95,7 @@ export class PostController implements IPostController {
     const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
 
     if (deleteImageUrls.length !== 0) {
-      const keys = await Promise.all(
-        deleteImageUrls.map((imgUrl) => {
-          return { Key: imgUrl.split("/").slice(-1)[0] };
-        })
-      );
-
-      const command = new DeleteObjectsCommand({
-        Bucket: bucketName,
-        Delete: {
-          Objects: keys,
-        },
-      });
-
-      await s3.send(command);
+      await this.deleteImages(deleteImageUrls);
     }
 
     const postDto = new PostDto({
@@ -148,20 +123,7 @@ export class PostController implements IPostController {
     const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
 
     if (deleteImageUrls.length !== 0) {
-      const keys = await Promise.all(
-        deleteImageUrls.map((imgUrl) => {
-          return { Key: imgUrl.split("/").slice(-1)[0] };
-        })
-      );
-
-      const command = new DeleteObjectsCommand({
-        Bucket: bucketName,
-        Delete: {
-          Objects: keys,
-        },
-      });
-
-      await s3.send(command);
+      await this.deleteImages(deleteImageUrls);
     }
 
     const postDto = new PostDto({
@@ -197,23 +159,16 @@ export class PostController implements IPostController {
     }
   }
 
-  // 굳이 비동기 함수 왜 써...?
-  async addImages(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  addImages(req: Request, res: Response, next: NextFunction): void {
     const images = req.files as Express.MulterS3.File[];
 
     if (!images || images.length === 0) {
       throw new BadRequestException("이미지가 존재하지 않음");
     }
 
-    const path = await Promise.all(
-      images.map((img) => {
-        return img.location;
-      })
-    );
+    const path = images.map((img) => {
+      return img.location;
+    });
 
     if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send({ imageUrls: path });
@@ -221,6 +176,25 @@ export class PostController implements IPostController {
       res
         .status(200)
         .send({ accessToken: res.locals.accessToken, imageUrls: path });
+    }
+  }
+
+  async deleteImages(deleteImageUrls: string[]) {
+    if (deleteImageUrls.length !== 0) {
+      const keys = await Promise.all(
+        deleteImageUrls.map((imgUrl) => {
+          return { Key: imgUrl.split("/").slice(-1)[0] };
+        })
+      );
+
+      const command = new DeleteObjectsCommand({
+        Bucket: bucketName,
+        Delete: {
+          Objects: keys,
+        },
+      });
+
+      await s3.send(command);
     }
   }
 }
