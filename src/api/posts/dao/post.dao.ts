@@ -59,11 +59,13 @@ export class PostRepository implements IpostRepository {
 
     const postIdx = postIdxQueryResult.rows[0].idx;
 
-    if (postDto.isImage) {
-      await conn.query(
-        `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
-        [postIdx, postDto.imageUrls]
-      );
+    if (postDto.imageUrls && postDto.imageUrls?.length !== 0) {
+      for (let i = 0; i < postDto.imageUrls.length; i++) {
+        await conn.query(
+          `INSERT INTO project.image ("postIdx", "imageUrl", "imageOrder") VALUES ($1, $2, $3)`,
+          [postIdx, postDto.imageUrls[i], i + 1]
+        );
+      }
     }
 
     await conn.query("COMMIT");
@@ -92,8 +94,8 @@ export class PostRepository implements IpostRepository {
     conn: Pool = this.pool
   ): Promise<any[]> {
     const postQueryResult = await conn.query(
-      `SELECT 1 FROM project.post WHERE title = $1`,
-      [postDto.title]
+      `SELECT 1 FROM project.post WHERE title = $1 AND idx != $2`,
+      [postDto.title, postDto.postIdx]
     );
 
     return postQueryResult.rows;
@@ -196,7 +198,7 @@ export class PostRepository implements IpostRepository {
       if (!postDto.isSameImage) {
         if (postDto.imageUrls?.length !== 0) {
           await conn.query(
-            `UPDATE project.image SET "imageUrls" = $1 WHERE "postIdx" = $2`,
+            `UPDATE project.image SET "imageUrl" = $1 WHERE "postIdx" = $2`,
             [postDto.imageUrls, postDto.postIdx]
           );
         }

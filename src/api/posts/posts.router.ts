@@ -37,7 +37,6 @@ postRouter.post(
     ["title", regx.postTitleRegx],
     ["content", regx.postContentRegx],
   ]),
-
   wrapper(controller.postController.addPost.bind(controller.postController))
 );
 postRouter.get(
@@ -67,6 +66,8 @@ postRouter.put(
   checkParamIdx(["postIdx"]),
   wrapper(controller.postController.postLike.bind(controller.postController))
 );
+
+// 한 번 저장된 이미지는 절대로 삭제하지 않겠다!!!
 postRouter.post(
   "/images",
   checkVerifyToken(),

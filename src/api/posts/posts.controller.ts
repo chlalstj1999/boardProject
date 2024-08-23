@@ -57,12 +57,31 @@ export class PostController implements IPostController {
       categoryIdx: postDto.categoryIdx,
     });
 
-    await this.postService.createPost(postDto, categoryDto);
+    try {
+      await this.postService.createPost(postDto, categoryDto);
 
-    if (typeof res.locals.accessToken === "undefined") {
-      res.status(200).send();
-    } else {
-      res.status(200).send({ accessToken: res.locals.accessToken });
+      if (typeof res.locals.accessToken === "undefined") {
+        res.status(200).send();
+      } else {
+        res.status(200).send({ accessToken: res.locals.accessToken });
+      }
+    } catch (err) {
+      if (postDto.imageUrls?.length !== 0) {
+        const keys = await Promise.all(
+          postDto.imageUrls!.map((imageUrl) => {
+            return { Key: imageUrl.split("/").slice(-1)[0] };
+          })
+        );
+
+        const command = new DeleteObjectsCommand({
+          Bucket: bucketName,
+          Delete: { Objects: keys },
+        });
+
+        await s3.send(command);
+
+        next(err);
+      }
     }
   }
 
@@ -178,6 +197,7 @@ export class PostController implements IPostController {
     }
   }
 
+  // 굳이 비동기 함수 왜 써...?
   async addImages(
     req: Request,
     res: Response,

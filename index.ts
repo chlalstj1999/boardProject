@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
-import session from "express-session";
+// import session from "express-session";
 import { Exception } from "./src/common/exception/Exception";
 import userRouter from "./src/api/users/users.router";
 import categoryRouter from "./src/api/categorys/categorys.router";
@@ -9,7 +9,7 @@ import postRouter from "./src/api/posts/posts.router";
 import commentRouter from "./src/api/comments/comments.router";
 import { NotFoundException } from "./src/common/exception/NotFoundException";
 import cookieParser from "cookie-parser";
-import { sessionSecret } from "./src/common/const/environment";
+// import { sessionSecret } from "./src/common/const/environment";
 
 const app = express();
 
@@ -55,6 +55,7 @@ app.use((err: Exception, req: Request, res: Response, next: NextFunction) => {
       message: err.message,
     });
   } else {
+    console.log(err);
     res.status(err.statusCode || 500).send(err.message);
   }
 });
