@@ -83,18 +83,6 @@ export class PostService implements IPostService {
       throw new ConflictException("같은 제목이 존재함");
     }
 
-    postDto.isSameImage = false;
-
-    if (postDto.imageUrls?.length === postDto.originalImageUrls?.length) {
-      for (let i = 0; i < postDto.imageUrls!.length; i++) {
-        if (postDto.imageUrls![i] !== postDto.originalImageUrls![i]) {
-          postDto.isSameImage = false;
-        } else {
-          postDto.isSameImage = true;
-        }
-      }
-    }
-
     await this.postRepository.putPost(postDto, this.pool);
   }
 

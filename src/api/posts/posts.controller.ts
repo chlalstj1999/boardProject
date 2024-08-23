@@ -120,18 +120,15 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
-
-    if (deleteImageUrls.length !== 0) {
-      await this.deleteImages(deleteImageUrls);
-    }
-
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       postIdx: Number(req.params.postIdx),
     });
 
     await this.postService.deletePost(postDto);
+    if (postDto.imageUrls?.length !== 0) {
+      await this.deleteImages(postDto.imageUrls!);
+    }
 
     if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send();

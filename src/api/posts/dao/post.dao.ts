@@ -179,45 +179,32 @@ export class PostRepository implements IpostRepository {
       `UPDATE project.post SET title = $1, content = $2 WHERE idx = $3`,
       [postDto.title, postDto.content, postDto.postIdx]
     );
-
-    if (postDto.isImage) {
-      if (!postDto.isSameImage) {
-        if (postDto.imageUrls?.length !== 0) {
-          await conn.query(
-            `UPDATE project.image SET "imageUrl" = $1 WHERE "postIdx" = $2`,
-            [postDto.imageUrls, postDto.postIdx]
-          );
-        }
-      }
-
-      if (postDto.imageUrls?.length === 0) {
-        await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
-          postDto.postIdx,
-        ]);
-      }
-    } else {
-      if (postDto.imageUrls?.length !== 0) {
-        await conn.query(
-          `INSERT INTO project.image ("postIdx", "imageUrls") VALUES ($1, $2)`,
-          [postDto.postIdx, postDto.imageUrls]
-        );
-      }
-    }
-
     await conn.query(`COMMIT`);
   }
 
   async deletePost(postDto: PostDto, conn: Pool = this.pool): Promise<void> {
+    const imageQueryResult = await conn.query(
+      `SELECT "imageUrl" FROM project.image WHERE "postIdx" = $1 ORDER BY "imageOrder" ASC;`,
+      [postDto.postIdx]
+    );
+
+    postDto.imageUrls = [];
+
+    if (imageQueryResult.rows.length !== 0) {
+      for (let i = 0; i < imageQueryResult.rows.length; i++) {
+        postDto.imageUrls?.push(imageQueryResult.rows[i].imageUrl);
+      }
+    }
+
     await conn.query("BEGIN");
     await conn.query(`DELETE FROM project.post WHERE idx = $1`, [
       postDto.postIdx,
     ]);
+    await conn.query("COMMIT");
+    await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
+      postDto.postIdx,
+    ]);
 
-    if (postDto.isImage) {
-      await conn.query(`DELETE FROM project.image WHERE "postIdx" = $1`, [
-        postDto.postIdx,
-      ]);
-    }
     await conn.query("COMMIT");
   }
 
