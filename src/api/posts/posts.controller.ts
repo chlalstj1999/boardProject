@@ -106,11 +106,15 @@ export class PostController implements IPostController {
     try {
       await this.postService.updatePost(postDto);
 
-      const deleteImages = req.body.deleteImages;
+      let deleteImages: string[] = [];
 
-      if (deleteImages.length !== 0) {
-        this.deleteImages(deleteImages);
+      for (let i = 0; i < postDto.imageOrder!.length; i++) {
+        if (postDto.imageOrder![i] === -1) {
+          deleteImages.push(postDto.imageUrls![i]);
+        }
       }
+
+      await this.deleteImages(deleteImages);
 
       if (typeof res.locals.accessToken === "undefined") {
         res.status(200).send();
@@ -189,7 +193,9 @@ export class PostController implements IPostController {
       throw new BadRequestException("이미지가 존재하지 않음");
     }
 
-    if (images.length !== imageCnt) {
+    if (images.length !== Number(imageCnt)) {
+      console.log(typeof images.length);
+      console.log(typeof imageCnt);
       const path = await Promise.all(
         images.map((img) => {
           return img.location;
@@ -216,6 +222,7 @@ export class PostController implements IPostController {
   }
 
   async deleteImages(deleteImageUrls: string[]): Promise<void> {
+    console.log(deleteImageUrls);
     if (deleteImageUrls.length !== 0) {
       const keys = await Promise.all(
         deleteImageUrls.map((imgUrl) => {

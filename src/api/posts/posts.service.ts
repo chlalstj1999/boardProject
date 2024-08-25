@@ -79,6 +79,7 @@ export class PostService implements IPostService {
       this.pool
     );
 
+    console.log(postDuplicate);
     if (postDuplicate.length !== 0) {
       throw new ConflictException("같은 제목이 존재함");
     }

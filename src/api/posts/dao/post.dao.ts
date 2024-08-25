@@ -181,18 +181,32 @@ export class PostRepository implements IpostRepository {
     );
 
     for (let i = 0; i < postDto.imageOrder!.length; i++) {
+      if (postDto.imageOrder![i] === -1) {
+        await conn.query(`DELETE FROM project.image WHERE "imageUrl" = $1`, [
+          postDto.imageUrls![i],
+        ]);
+      }
+    }
+
+    let index = 1;
+
+    for (let i = 0; i < postDto.imageOrder!.length; i++) {
       if (postDto.imageOrder![i] === 1) {
         await conn.query(
           `INSERT INTO project.image ("postIdx", "imageUrl", "imageOrder") VALUES ($1, $2, $3)`,
-          [postDto.postIdx, postDto.imageUrls![i], i + 1]
+          [postDto.postIdx, postDto.imageUrls![i], index]
         );
+
+        index += 1;
       }
 
       if (postDto.imageOrder![i] === 0) {
         await conn.query(
-          `UPDATE project.image "imageOrder" = $1 WHERE idx = $2`,
-          [i + 1, postDto.postIdx]
+          `UPDATE project.image SET "imageOrder" = $1 WHERE idx = $2 AND "imageUrl" = $3`,
+          [index, postDto.postIdx, postDto.imageUrls![i]]
         );
+
+        index += 1;
       }
     }
 
