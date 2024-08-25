@@ -103,6 +103,10 @@ export class PostController implements IPostController {
       imageOrder: req.body.imageOrder,
     });
 
+    if (postDto.imageUrls?.length !== postDto.imageOrder?.length) {
+      throw new BadRequestException("두 개의 배열 길이가 다름");
+    }
+
     try {
       await this.postService.updatePost(postDto);
 
