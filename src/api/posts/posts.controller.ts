@@ -6,6 +6,7 @@ import { BadRequestException } from "../../common/exception/BadRequestException"
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { bucketName } from "../../common/const/environment";
 import { s3 } from "../../common/const/s3Client";
+import { InternalServerErrorException } from "../../common/exception/InternalServerErrorException";
 
 interface IPostController {
   getPostLists(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -14,7 +15,8 @@ interface IPostController {
   putPost(req: Request, res: Response, next: NextFunction): Promise<void>;
   deletePost(req: Request, res: Response, next: NextFunction): Promise<void>;
   postLike(req: Request, res: Response, next: NextFunction): Promise<void>;
-  addImages(req: Request, res: Response, next: NextFunction): void;
+  addImages(req: Request, res: Response, next: NextFunction): Promise<void>;
+  deleteImages(deleteImageUrls: string[]): Promise<void>;
 }
 export class PostController implements IPostController {
   constructor(private readonly postService: PostService) {}
@@ -92,26 +94,41 @@ export class PostController implements IPostController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const deleteImageUrls = req.body.deleteImageUrls as Array<string>;
-
-    if (deleteImageUrls.length !== 0) {
-      await this.deleteImages(deleteImageUrls);
-    }
-
     const postDto = new PostDto({
       accountIdx: res.locals.accountIdx,
       postIdx: Number(req.params.postIdx),
       title: req.body.title,
       content: req.body.content,
       imageUrls: req.body.imageUrls,
+      imageOrder: req.body.imageOrder,
     });
 
-    await this.postService.updatePost(postDto);
+    try {
+      await this.postService.updatePost(postDto);
 
-    if (typeof res.locals.accessToken === "undefined") {
-      res.status(200).send();
-    } else {
-      res.status(200).send({ accessToken: res.locals.accessToken });
+      const deleteImages = req.body.deleteImages;
+
+      if (deleteImages.length !== 0) {
+        this.deleteImages(deleteImages);
+      }
+
+      if (typeof res.locals.accessToken === "undefined") {
+        res.status(200).send();
+      } else {
+        res.status(200).send({ accessToken: res.locals.accessToken });
+      }
+    } catch (err) {
+      let newImages: string[] = [];
+
+      for (let i = 0; i < postDto.imageOrder!.length; i++) {
+        if (postDto.imageOrder![i] === 1) {
+          newImages.push(postDto.imageUrls![i]);
+        }
+      }
+
+      this.deleteImages(newImages);
+
+      next(err);
     }
   }
 
@@ -125,15 +142,19 @@ export class PostController implements IPostController {
       postIdx: Number(req.params.postIdx),
     });
 
-    await this.postService.deletePost(postDto);
-    if (postDto.imageUrls?.length !== 0) {
-      await this.deleteImages(postDto.imageUrls!);
-    }
+    try {
+      await this.postService.deletePost(postDto);
+      if (postDto.imageUrls?.length !== 0) {
+        await this.deleteImages(postDto.imageUrls!);
+      }
 
-    if (typeof res.locals.accessToken === "undefined") {
-      res.status(200).send();
-    } else {
-      res.status(200).send({ accessToken: res.locals.accessToken });
+      if (typeof res.locals.accessToken === "undefined") {
+        res.status(200).send();
+      } else {
+        res.status(200).send({ accessToken: res.locals.accessToken });
+      }
+    } catch (err) {
+      next(err);
     }
   }
 
@@ -156,16 +177,34 @@ export class PostController implements IPostController {
     }
   }
 
-  addImages(req: Request, res: Response, next: NextFunction): void {
+  async addImages(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     const images = req.files as Express.MulterS3.File[];
+    const imageCnt = req.body.imageCnt;
 
     if (!images || images.length === 0) {
       throw new BadRequestException("이미지가 존재하지 않음");
     }
 
-    const path = images.map((img) => {
-      return img.location;
-    });
+    if (images.length !== imageCnt) {
+      const path = await Promise.all(
+        images.map((img) => {
+          return img.location;
+        })
+      );
+
+      await this.deleteImages(path);
+      throw new InternalServerErrorException("이미지 업로드 도중 중단됨");
+    }
+
+    const path = await Promise.all(
+      images.map((img) => {
+        return img.location;
+      })
+    );
 
     if (typeof res.locals.accessToken === "undefined") {
       res.status(200).send({ imageUrls: path });
@@ -176,7 +215,7 @@ export class PostController implements IPostController {
     }
   }
 
-  async deleteImages(deleteImageUrls: string[]) {
+  async deleteImages(deleteImageUrls: string[]): Promise<void> {
     if (deleteImageUrls.length !== 0) {
       const keys = await Promise.all(
         deleteImageUrls.map((imgUrl) => {

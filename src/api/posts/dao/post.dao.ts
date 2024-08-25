@@ -179,6 +179,23 @@ export class PostRepository implements IpostRepository {
       `UPDATE project.post SET title = $1, content = $2 WHERE idx = $3`,
       [postDto.title, postDto.content, postDto.postIdx]
     );
+
+    for (let i = 0; i < postDto.imageOrder!.length; i++) {
+      if (postDto.imageOrder![i] === 1) {
+        await conn.query(
+          `INSERT INTO project.image ("postIdx", "imageUrl", "imageOrder") VALUES ($1, $2, $3)`,
+          [postDto.postIdx, postDto.imageUrls![i], i + 1]
+        );
+      }
+
+      if (postDto.imageOrder![i] === 0) {
+        await conn.query(
+          `UPDATE project.image "imageOrder" = $1 WHERE idx = $2`,
+          [i + 1, postDto.postIdx]
+        );
+      }
+    }
+
     await conn.query(`COMMIT`);
   }
 
