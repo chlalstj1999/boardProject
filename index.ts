@@ -29,6 +29,18 @@ app.use(cookieParser());
 //   }
 // }
 
+app.get("/loginPage", (req: Request, res: Response) => {
+  res.sendFile(`${__dirname}/src/page/loginPage.html`);
+});
+
+app.get("/mainPage", (req: Request, res: Response) => {
+  res.sendFile(`${__dirname}/src/page/mainPage.html`);
+});
+
+app.get("/oauthSignUpPage", (req: Request, res: Response) => {
+  res.sendFile(`${__dirname}/src/page/oauthSignUpPage.html`);
+});
+
 app.use(logRequests);
 
 app.use("/users", userRouter);
@@ -41,21 +53,15 @@ app.use((req, res, next) => {
 });
 
 app.use((err: Exception, req: Request, res: Response, next: NextFunction) => {
-  // 의미가 없는 if 문
-  if (err.message === "jwt expired") {
-    res.status(401).send({
-      message: err.message,
-    });
-  } else if (err.message === "invalid signature") {
-    res.status(401).send({
-      message: err.message,
-    });
-  } else if (err.message === "jwt must be provided") {
+  if (
+    err.message === "jwt expired" ||
+    err.message === "invalid signature" ||
+    err.message === "jwt must be provided"
+  ) {
     res.status(401).send({
       message: err.message,
     });
   } else {
-    console.log(err);
     res.status(err.statusCode || 500).send(err.message);
   }
 });

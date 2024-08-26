@@ -36,6 +36,16 @@ export class UserRepository implements IuserRepository {
     );
   }
 
+  async createAccountByOauth(
+    userDto: UserDto,
+    conn: Pool = this.pool
+  ): Promise<void> {
+    await conn.query(
+      `INSERT INTO project.account (name, email, "roleIdx", path) VALUES ($1, $2, $3, $4)`,
+      [userDto.userName, userDto.email, userDto.roleIdx, userDto.signUpPath]
+    );
+  }
+
   async selectById(userDto: UserDto, conn: Pool = this.pool): Promise<any[]> {
     const duplicatedIdQueryResult = await conn.query(
       `SELECT 1 FROM project.account WHERE id=$1`,

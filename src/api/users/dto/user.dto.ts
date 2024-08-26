@@ -9,6 +9,7 @@ interface IuserDto {
   gender?: string;
   roleName?: string;
   roleIdx?: number;
+  signUpPath?: string;
 }
 
 interface IuserResponseDto {
@@ -33,6 +34,7 @@ export class UserDto implements IuserDto, IuserResponseDto {
   gender?: string;
   roleName?: string;
   roleIdx?: number;
+  signUpPath?: string;
 
   constructor(data?: Partial<IuserDto>) {
     if (data) {

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="kr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>birth: <input id="birth" type="text" /></div>
+    <div>gender: <input id="gender" type="text" /></div>
+    <input
+      id="signUpButton"
+      type="button"
+      value="회원가입"
+      onclick="signUpEvent()"
+    />
+
+    <script>
+      async function signUpEvent() {
+        const birth = document.getElementById("birth").value;
+        const gender = document.getElementById("gender").value;
+        const urlParams = new URLSearchParams(location.search);
+        const userName = urlParams.get("userName");
+        const email = urlParams.get("email");
+        const signUpPath = urlParams.get("signUpPath");
+
+        const response = await fetch("/users/oauth", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userName: userName,
+            email: email,
+            gender: gender,
+            birth: birth,
+            signUpPath: signUpPath,
+          }),
+        });
+
+        if (response.status === 200) {
+          const response = await fetch("/users/login/google", {
+            method: "POST",
+          });
+
+          location.href = "http://localhost/loginPage";
+        }
+      }
+    </script>
+  </body>
+</html>

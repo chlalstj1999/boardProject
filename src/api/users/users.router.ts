@@ -22,6 +22,16 @@ userRouter.post(
   wrapper(controller.userController.signUp.bind(controller.userController))
 );
 userRouter.post(
+  "/oauth",
+  isRegxMatch([
+    ["userName", regx.userNameRegx],
+    ["email", regx.emailRegx],
+    ["gender", regx.genderRegx],
+    ["birth", regx.birthRegx],
+  ]),
+  wrapper(controller.userController.signUp.bind(controller.userController))
+);
+userRouter.post(
   "/login",
   isRegxMatch([
     ["idValue", regx.idRegx],
@@ -41,7 +51,7 @@ userRouter.get(
     )
   )
 );
-userRouter.get(
+userRouter.post(
   "/login/kakao",
   wrapper(controller.userController.kakaoLogin.bind(controller.userController))
 );
@@ -51,7 +61,7 @@ userRouter.get(
     controller.userController.kakaoOAuthCallback.bind(controller.userController)
   )
 );
-userRouter.get(
+userRouter.post(
   "/login/naver",
   wrapper(controller.userController.naverLogin.bind(controller.userController))
 );

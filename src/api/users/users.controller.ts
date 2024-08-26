@@ -21,6 +21,7 @@ import axios from "axios";
 
 interface IUserController {
   signUp(req: Request, res: Response, next: NextFunction): Promise<void>;
+  oauthSignUp(req: Request, res: Response, next: NextFunction): Promise<void>;
   login(req: Request, res: Response, next: NextFunction): Promise<void>;
   logout(req: Request, res: Response, next: NextFunction): Promise<void>;
   googleLogin(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -44,6 +45,7 @@ interface IUserController {
 
 interface KakaoAccount {
   email: string;
+  name: string;
 }
 
 interface KakaoUserInfoResponse {
@@ -52,6 +54,7 @@ interface KakaoUserInfoResponse {
 
 interface naverAccount {
   email: string;
+  name: string;
 }
 
 interface naverUserInfoResponse {
@@ -70,6 +73,25 @@ export class UserController implements IUserController {
       gender: req.body.gender,
       birth: req.body.birth,
       roleIdx: 2,
+    });
+
+    await this.userService.createUser(userDto);
+
+    res.status(200).send();
+  }
+
+  async oauthSignUp(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const userDto = new UserDto({
+      userName: req.body.userName,
+      email: req.body.email,
+      gender: req.body.gender,
+      birth: req.body.birth,
+      roleIdx: 2,
+      signUpPath: req.body.signUpPath,
     });
 
     await this.userService.createUser(userDto);
@@ -109,7 +131,10 @@ export class UserController implements IUserController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const scopes = ["https://www.googleapis.com/auth/userinfo.email"];
+    const scopes = [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+    ];
 
     const state = crypto.randomBytes(32).toString("hex");
 
@@ -149,7 +174,7 @@ export class UserController implements IUserController {
     const tokens = tokenResponse.data;
     oauth2Client.setCredentials(tokens);
 
-    const userInfoResponse = await axios.get<{ email: string }>(
+    const userInfoResponse = await axios.get<{ name: string; email: string }>(
       "https://www.googleapis.com/oauth2/v2/userinfo",
       {
         headers: {
@@ -158,35 +183,49 @@ export class UserController implements IUserController {
       }
     );
 
+    await axios.post<{ name: string; email: string }>(
+      `https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
+    );
+
     const googleEmail = userInfoResponse.data.email;
+    const userName = userInfoResponse.data.name;
 
     const userDto = new UserDto({
+      userName: userName!,
       email: googleEmail!,
+      signUpPath: "google",
     });
 
     await this.userService.selectUserByEmail(userDto);
 
     if (typeof userDto.accountIdx === "undefined") {
-      throw new ForbiddenException("회원가입 필요");
+      res.redirect(
+        `http://localhost/loginPage?userName=${userDto.userName}&email=${userDto.email}&signUpPath=${userDto.signUpPath}`
+      );
+    } else {
+      const accessToken = generateAccessToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+      const refreshToken = generateRefreshToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 3600 * 24,
+        sameSite: "strict",
+      });
+
+      res.redirect(`http://localhost/mainPage?accessToken=${accessToken}`);
     }
-
-    const accessToken = generateAccessToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-    const refreshToken = generateRefreshToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 7 * 3600 * 24,
-      sameSite: "strict",
-    });
-
-    res.status(200).send({ accessToken: accessToken });
   }
 
   async kakaoLogin(
@@ -235,9 +274,12 @@ export class UserController implements IUserController {
     );
 
     const kakaoEmail = userInfoResponse.data.kakao_account.email;
+    const userName = userInfoResponse.data.kakao_account.name;
 
     const userDto = new UserDto({
       email: kakaoEmail!,
+      userName: userName!,
+      signUpPath: "kakao",
     });
 
     await this.userService.selectUserByEmail(userDto);
@@ -262,7 +304,7 @@ export class UserController implements IUserController {
       sameSite: "strict",
     });
 
-    res.status(200).send({ accessToken: accessToken });
+    res.redirect(`http://localhost/mainPage?accessToken=${accessToken}`);
   }
 
   async naverLogin(
@@ -315,9 +357,12 @@ export class UserController implements IUserController {
     );
 
     const naverEmail = userInfoResponse.data.response.email;
+    const userName = userInfoResponse.data.response.name;
 
     const userDto = new UserDto({
       email: naverEmail!,
+      userName: userName!,
+      signUpPath: "naver",
     });
 
     await this.userService.selectUserByEmail(userDto);

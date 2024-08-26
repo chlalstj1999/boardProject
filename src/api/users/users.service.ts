@@ -6,6 +6,7 @@ import { NotFoundException } from "../../common/exception/NotFoundException";
 
 interface IuserService {
   createUser(userDto: UserDto): Promise<void>;
+  createUserByOauth(userDto: UserDto): Promise<void>;
   selectUser(userDto: UserDto): Promise<UserDto>;
   selectId(userDto: UserDto): Promise<UserDto>;
   selectPw(userDto: UserDto): Promise<UserDto>;
@@ -40,6 +41,10 @@ export class UserService implements IuserService {
     }
 
     await this.userRepository.createAccount(userDto, this.pool);
+  }
+
+  async createUserByOauth(userDto: UserDto): Promise<void> {
+    await this.userRepository.createAccountByOauth(userDto, this.pool);
   }
 
   async selectUser(userDto: UserDto): Promise<UserDto> {
