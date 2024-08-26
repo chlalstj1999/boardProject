@@ -198,8 +198,6 @@ export class PostController implements IPostController {
     }
 
     if (images.length !== Number(imageCnt)) {
-      console.log(typeof images.length);
-      console.log(typeof imageCnt);
       const path = await Promise.all(
         images.map((img) => {
           return img.location;
@@ -226,7 +224,6 @@ export class PostController implements IPostController {
   }
 
   async deleteImages(deleteImageUrls: string[]): Promise<void> {
-    console.log(deleteImageUrls);
     if (deleteImageUrls.length !== 0) {
       const keys = await Promise.all(
         deleteImageUrls.map((imgUrl) => {

@@ -393,7 +393,6 @@ export class UserController implements IUserController {
       }
     );
 
-    console.log(userInfoResponse.data);
     const naverEmail = userInfoResponse.data.response.email;
     const userName = userInfoResponse.data.response.name;
 
