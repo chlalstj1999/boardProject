@@ -41,8 +41,15 @@ export class UserRepository implements IuserRepository {
     conn: Pool = this.pool
   ): Promise<void> {
     await conn.query(
-      `INSERT INTO project.account (name, email, "roleIdx", path) VALUES ($1, $2, $3, $4)`,
-      [userDto.userName, userDto.email, userDto.roleIdx, userDto.signUpPath]
+      `INSERT INTO project.account (name, email, birth, gender, "roleIdx", path) VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        userDto.userName,
+        userDto.email,
+        userDto.birth,
+        userDto.gender,
+        userDto.roleIdx,
+        userDto.signUpPath,
+      ]
     );
   }
 

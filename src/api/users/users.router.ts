@@ -51,7 +51,7 @@ userRouter.get(
     )
   )
 );
-userRouter.post(
+userRouter.get(
   "/login/kakao",
   wrapper(controller.userController.kakaoLogin.bind(controller.userController))
 );
@@ -61,7 +61,7 @@ userRouter.get(
     controller.userController.kakaoOAuthCallback.bind(controller.userController)
   )
 );
-userRouter.post(
+userRouter.get(
   "/login/naver",
   wrapper(controller.userController.naverLogin.bind(controller.userController))
 );

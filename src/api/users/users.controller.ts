@@ -94,7 +94,7 @@ export class UserController implements IUserController {
       signUpPath: req.body.signUpPath,
     });
 
-    await this.userService.createUser(userDto);
+    await this.userService.createUserByOauth(userDto);
 
     res.status(200).send();
   }
@@ -155,6 +155,10 @@ export class UserController implements IUserController {
   ): Promise<void> {
     const authorizationCode = req.query.code as string;
 
+    if (req.query.error === "access_denied") {
+      return res.redirect("http://localhost/users/login/google");
+    }
+
     const tokenResponse = await axios.post<{ access_token: string }>(
       "https://oauth2.googleapis.com/token",
       {
@@ -204,7 +208,7 @@ export class UserController implements IUserController {
     await this.userService.selectUserByEmail(userDto);
 
     if (typeof userDto.accountIdx === "undefined") {
-      res.redirect(
+      return res.redirect(
         `http://localhost/loginPage?userName=${userDto.userName}&email=${userDto.email}&signUpPath=${userDto.signUpPath}`
       );
     } else {
@@ -224,7 +228,9 @@ export class UserController implements IUserController {
         sameSite: "strict",
       });
 
-      res.redirect(`http://localhost/mainPage?accessToken=${accessToken}`);
+      return res.redirect(
+        `http://localhost/mainPage?accessToken=${accessToken}`
+      );
     }
   }
 
@@ -234,7 +240,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     res.redirect(
-      `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUrl}`
+      `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUrl}&scope=account_email&prompt=login`
     );
   }
 
@@ -244,6 +250,10 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     const authorizationCode = req.query.code as string;
+
+    if (req.query.error === "302") {
+      return res.redirect("http://localhost/users/login/kakao");
+    }
 
     const tokenResponse = await axios.post<{ access_token: string }>(
       "https://kauth.kakao.com/oauth/token",
@@ -273,6 +283,22 @@ export class UserController implements IUserController {
       }
     );
 
+    await axios.post(
+      "https://nid.naver.com/oauth2.0/token",
+      {
+        grant_type: "delete",
+        client_id: naverClientId,
+        client_secret: naverClientSecret,
+        access_token: tokens.access_token,
+        service_provider: "NAVER",
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
     const kakaoEmail = userInfoResponse.data.kakao_account.email;
     const userName = userInfoResponse.data.kakao_account.name;
 
@@ -285,26 +311,30 @@ export class UserController implements IUserController {
     await this.userService.selectUserByEmail(userDto);
 
     if (typeof userDto.accountIdx === "undefined") {
-      throw new ForbiddenException("회원가입 필요");
+      return res.redirect(
+        `http://localhost/loginPage?userName=${userDto.userName}&email=${userDto.email}&signUpPath=${userDto.signUpPath}`
+      );
+    } else {
+      const accessToken = generateAccessToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+      const refreshToken = generateRefreshToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 3600 * 24,
+        sameSite: "strict",
+      });
+
+      return res.redirect(
+        `http://localhost/mainPage?accessToken=${accessToken}`
+      );
     }
-
-    const accessToken = generateAccessToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-    const refreshToken = generateRefreshToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 7 * 3600 * 24,
-      sameSite: "strict",
-    });
-
-    res.redirect(`http://localhost/mainPage?accessToken=${accessToken}`);
   }
 
   async naverLogin(
@@ -326,6 +356,10 @@ export class UserController implements IUserController {
   ): Promise<void> {
     const authorizationCode = req.query.code as string;
     const authorizationState = req.query.state as string;
+
+    if (req.query.error === "access_denied") {
+      return res.redirect(`http://localhost/users/login/naver`);
+    }
 
     const tokenResponse = await axios.post<{ access_token: string }>(
       "https://nid.naver.com/oauth2.0/token",
@@ -368,26 +402,30 @@ export class UserController implements IUserController {
     await this.userService.selectUserByEmail(userDto);
 
     if (typeof userDto.accountIdx === "undefined") {
-      throw new ForbiddenException("회원가입 필요");
+      return res.redirect(
+        `http://localhost/loginPage?userName=${userDto.userName}&email=${userDto.email}&signUpPath=${userDto.signUpPath}`
+      );
+    } else {
+      const accessToken = generateAccessToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+      const refreshToken = generateRefreshToken(
+        userDto.accountIdx!,
+        userDto.roleIdx!
+      );
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 7 * 3600 * 24,
+        sameSite: "strict",
+      });
+
+      return res.redirect(
+        `http://localhost/mainPage?accessToken=${accessToken}`
+      );
     }
-
-    const accessToken = generateAccessToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-    const refreshToken = generateRefreshToken(
-      userDto.accountIdx!,
-      userDto.roleIdx!
-    );
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 7 * 3600 * 24,
-      sameSite: "strict",
-    });
-
-    res.status(200).send({ accessToken: accessToken });
   }
 
   async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
