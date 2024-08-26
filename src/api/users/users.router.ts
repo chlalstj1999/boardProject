@@ -29,7 +29,7 @@ userRouter.post(
     ["gender", regx.genderRegx],
     ["birth", regx.birthRegx],
   ]),
-  wrapper(controller.userController.signUp.bind(controller.userController))
+  wrapper(controller.userController.oauthSignUp.bind(controller.userController))
 );
 userRouter.post(
   "/login",

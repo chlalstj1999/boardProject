@@ -7,7 +7,6 @@ import {
 } from "../../common/utils/token";
 import crypto from "node:crypto";
 import { oauth2Client } from "../../common/const/googleOAuthClient";
-import { ForbiddenException } from "../../common/exception/ForbiddenException";
 import {
   googleRedirectUrl,
   kakaoClientId,
@@ -43,9 +42,13 @@ interface IUserController {
   withdrawal(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 
+interface KakaoPofileNickname {
+  nickname: string;
+}
+
 interface KakaoAccount {
   email: string;
-  name: string;
+  profile: KakaoPofileNickname;
 }
 
 interface KakaoUserInfoResponse {
@@ -240,7 +243,7 @@ export class UserController implements IUserController {
     next: NextFunction
   ): Promise<void> {
     res.redirect(
-      `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUrl}&scope=account_email&prompt=login`
+      `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUrl}&scope=account_email,profile_nickname&prompt=login`
     );
   }
 
@@ -300,7 +303,7 @@ export class UserController implements IUserController {
     );
 
     const kakaoEmail = userInfoResponse.data.kakao_account.email;
-    const userName = userInfoResponse.data.kakao_account.name;
+    const userName = userInfoResponse.data.kakao_account.profile.nickname;
 
     const userDto = new UserDto({
       email: kakaoEmail!,
@@ -390,6 +393,7 @@ export class UserController implements IUserController {
       }
     );
 
+    console.log(userInfoResponse.data);
     const naverEmail = userInfoResponse.data.response.email;
     const userName = userInfoResponse.data.response.name;
 
