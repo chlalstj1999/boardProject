@@ -6,7 +6,6 @@ import { BadRequestException } from "../../common/exception/BadRequestException"
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { bucketName } from "../../common/const/environment";
 import { s3 } from "../../common/const/s3Client";
-import { InternalServerErrorException } from "../../common/exception/InternalServerErrorException";
 
 interface IPostController {
   getPostLists(req: Request, res: Response, next: NextFunction): Promise<void>;
@@ -191,21 +190,9 @@ export class PostController implements IPostController {
     next: NextFunction
   ): Promise<void> {
     const images = req.files as Express.MulterS3.File[];
-    const imageCnt = req.body.imageCnt;
 
     if (!images || images.length === 0) {
       throw new BadRequestException("이미지가 존재하지 않음");
-    }
-
-    if (images.length !== Number(imageCnt)) {
-      const path = await Promise.all(
-        images.map((img) => {
-          return img.location;
-        })
-      );
-
-      await this.deleteImages(path);
-      throw new InternalServerErrorException("이미지 업로드 도중 중단됨");
     }
 
     const path = await Promise.all(
